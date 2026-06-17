@@ -53,7 +53,20 @@ This repo converges them onto established tools.
 | **Bao reachable from the fleet** (CA trust + AppRole) | ❌ blocker — gates fleet secret rendering + Ansible vault + VPCs |
 | System Ansible role (sudo packages/services) | ⏳ stub |
 
-## Known blocker: OpenBao from the fleet — it's a Tailscale ACL
+## RESOLVED (2026-06-17): OpenBao from the fleet
+
+Fixed. Added an additive Tailscale ACL grant `tag:tiny -> [svc:bao, tag:secrets]
+: tcp:443,8200` (via the API, key from Bao `kv/projects/fos/shared/tailscale-admin`),
+enabled `accept-dns` on the tinys, installed the `bao` CLI fleet-wide, and gave
+each box a scoped **read-only** AppRole token (policy `fleet-kv-read`, role
+`fleet-kv`) in `~/.vault-token` with creds in `~/.config/bao/approle` refreshed by
+`dotfiles bin/bao-relogin`. `bao kv get` verified on all tinys. The linear-tui/scw
+wrappers now read Bao at call time on every box, so `dotfiles-fleet-linear-key`
+was retired. Remaining: auto-renewal timer for the periodic token; chezmoi cutover
+(secrets already work via the wrappers, so no longer urgent). Ansible
+`hashi_vault` and the VPC cattle path are now unblocked. History below.
+
+## (Historical) Known blocker: OpenBao from the fleet — it's a Tailscale ACL
 
 Diagnosed 2026-06-17. Bao runs on eigil (`:8200`, exposed via Tailscale Serve and
 reachable from Spark at `bao.olm-hops.ts.net`). The tinys **cannot reach eigil on
