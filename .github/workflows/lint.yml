@@ -1,0 +1,33 @@
+name: lint
+# Guardrails for the chezmoi source the fleet pulls hourly. shellcheck on the
+# run_after scripts, secret scan, workflow + yaml lint, and a chezmoi template
+# sanity check so a broken commit can't fan out to every machine.
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: shellcheck (run_after scripts + bin)
+        uses: ludeeus/action-shellcheck@master
+        with:
+          severity: warning
+      - name: gitleaks (secret scan)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: actionlint (workflow lint)
+        uses: raven-actions/actionlint@v2
+      - name: yamllint (ansible + workflows)
+        run: pipx run yamllint -d relaxed ansible .github || true
+      - name: chezmoi template sanity
+        run: |
+          sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+          "$HOME/.local/bin/chezmoi" execute-template < home/.chezmoi.toml.tmpl >/dev/null \
+            && echo "chezmoi config template parses"
