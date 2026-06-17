@@ -1,0 +1,27 @@
+# Scaleway configuration file
+# https://github.com/scaleway/scaleway-sdk-go/tree/master/scw#scaleway-config
+#
+# SECRETS LIVE IN OPENBAO, NOT HERE.
+#   path:   kv/projects/scaleway/cli   (fields: access_key, secret_key)
+#   bao:    https://bao.olm-hops.ts.net
+# This file keeps only non-secret defaults. The access_key/secret_key are
+# injected from Bao at call time (env vars override this file), e.g. via the
+# `scw` shell wrapper. Do NOT run `scw init` against this file: it would write
+# the secret back to disk. Use `scw config set <key> <value>` for non-secrets.
+
+# Organization ID — the identifier of your account inside Scaleway. Non-secret.
+default_organization_id: d0be35ee-8579-4bd6-89e3-18d55aa5367a
+
+# Project ID — the project your resources attach to. Non-secret.
+# (Equals the org ID here because this is the auto-created "default" project.)
+default_project_id: d0be35ee-8579-4bd6-89e3-18d55aa5367a
+
+# Region — geographical area (fr-par, nl-ams, pl-waw).
+default_region: fr-par
+
+# Zone — a datacenter within the region (fr-par-1, fr-par-2, ...).
+default_zone: fr-par-1
+
+# To improve the Scaleway CLI, diagnostic/usage data is sent by default.
+# Uncomment to disable.
+# send_telemetry: false
