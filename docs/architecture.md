@@ -53,10 +53,26 @@ This repo converges them onto established tools.
 | **Bao reachable from the fleet** (CA trust + AppRole) | ❌ blocker — gates fleet secret rendering + Ansible vault + VPCs |
 | System Ansible role (sudo packages/services) | ⏳ stub |
 
-## Known blocker: OpenBao from the fleet
+## Known blocker: OpenBao from the fleet — it's a Tailscale ACL
 
-Bao answers from Spark but not the tinys (TLS/CA or the port-less proxy). Until
-fixed: `baoReachable=false` on the fleet, chezmoi skips the secret file there,
-and `dotfiles-fleet-linear-key` remains the fleet secret path. Solving it (CA
-trust + per-machine AppRole) is the shared prerequisite for fleet secret
-rendering, Ansible `hashi_vault`, and the VPC cattle path.
+Diagnosed 2026-06-17. Bao runs on eigil (`:8200`, exposed via Tailscale Serve and
+reachable from Spark at `bao.olm-hops.ts.net`). The tinys **cannot reach eigil on
+any port** — `dicte -> 100.87.251.112:{22,8200}` both time out, while
+`spark -> eigil:8200` is open. So it is not TLS/DNS/cert/auth: the tinys are
+locked-down `tagged-devices` that the tailnet **ACL** does not permit to initiate
+connections to eigil (Spark can reach them; they can't reach back). MagicDNS is
+also not resolving on the tinys (secondary).
+
+**Fix (admin console only — cannot be done from the machines):** add an ACL grant
+allowing the fleet tag to reach the Bao host/port, e.g.
+
+```jsonc
+// tailnet policy
+{ "action": "accept", "src": ["tag:fleet"], "dst": ["<eigil/bao>:8200"] }
+```
+
+and enable MagicDNS / `--accept-dns` on the fleet nodes so `bao.olm-hops.ts.net`
+resolves there. Once the tinys can reach Bao + have a scoped read-only token in
+`~/.vault-token`, `baoReachable` flips true, chezmoi renders secrets on every box,
+and `dotfiles-fleet-linear-key` can be retired. Same unlock serves Ansible
+`hashi_vault` and the VPC cattle path.
