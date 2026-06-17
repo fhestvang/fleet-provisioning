@@ -2,3 +2,7 @@
 *.env
 .config/linear-tui/env
 **/.DS_Store
+
+# Agent telemetry — never versioned
+.claude/
+**/__pycache__/
