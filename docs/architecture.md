@@ -48,9 +48,11 @@ This repo converges them onto established tools.
 | chezmoi source: per-machine data, install.sh driver, agent-sync, Linear secret | ✅ done |
 | Validated rendering on Spark (data + secret) without mutating any home | ✅ done |
 | Ansible scaffold: inventory (static + Scaleway stub), site.yml, chezmoi role | ✅ done |
-| **Apply on a live fleet box** (real cutover) | ⏳ deliberate, one box at a time |
-| Retire the dotfiles commit-hook fan-out after cutover | ⏳ pending |
-| **Bao reachable from the fleet** (CA trust + AppRole) | ❌ blocker — gates fleet secret rendering + Ansible vault + VPCs |
+| **Cutover: chezmoi the live manager on spark + eigil + dicte + pi3** | ✅ done (2026-06-17), pull via @hourly cron; repo made public |
+| Retire the dotfiles commit-hook fan-out | ✅ done — hook + dotfiles-fleet-sync deleted |
+| **Bao reachable from the fleet** | ✅ done — ACL grant + read-only AppRole token |
+| ingvild left un-cut-over (hands-on session); laptop pending (user runs init) | ⏳ intentional |
+| Scaleway VPC lab (tag:scw-vm, cloud-init) | ✅ config in terraform/lab/, ready to apply |
 | System Ansible role (sudo packages/services) | ⏳ stub |
 
 ## RESOLVED (2026-06-17): OpenBao from the fleet
