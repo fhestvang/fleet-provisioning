@@ -4,9 +4,9 @@
 # This reuses the proven install.sh rather than re-porting its logic; chezmoi
 # owns orchestration + per-machine data + secrets, install.sh owns the content.
 #
-# run_onchange: re-runs whenever this script's rendered content changes. Bump
-# the marker below to force a re-converge across the fleet.
-#   marker: v1 ({{ .role }})
+# run_ (always): runs on every `chezmoi update`, so a dotfiles edit converges
+# within the hourly cron tick. install.sh itself is idempotent.
+#   {{ .role }}
 set -euo pipefail
 
 repo="$HOME/github/dotfiles"
