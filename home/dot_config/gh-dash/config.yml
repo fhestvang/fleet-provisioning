@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://gh-dash.dev/schema.json
+prSections:
+  - title: Mine
+    filters: is:open author:@me sort:updated-desc
+  - title: Review
+    filters: is:open review-requested:@me sort:updated-desc
+  - title: Involved
+    filters: is:open involves:@me -author:@me sort:updated-desc
+
+issuesSections:
+  - title: Assigned
+    filters: is:open assignee:@me sort:updated-desc
+  - title: Created
+    filters: is:open author:@me sort:updated-desc
+  - title: Mentioned
+    filters: is:open mentions:@me sort:updated-desc
+
+# Tell gh-dash where local clones live so {{.RepoPath}} resolves.
+repoPaths:
+  default: /home/fhestvang/github
+
+keybindings:
+  issues:
+    # l = native in-dash label editor (add/remove, stays inside the TUI).
+    - key: l
+      builtin: label
+    # A = dispatch this issue + its comment thread to a Claude Code agent
+    #     in a new tmux window. (External command -> dash suspends briefly.)
+    - key: A
+      name: send to agent
+      command: /home/fhestvang/.config/gh-dash/dispatch-agent.sh "{{.RepoName}}" "{{.IssueNumber}}"
+  prs:
+    # Same agent dispatch from a PR (uses the PR number).
+    - key: A
+      name: send to agent
+      command: /home/fhestvang/.config/gh-dash/dispatch-agent.sh "{{.RepoName}}" "{{.PrNumber}}"
+
+defaults:
+  view: issues
+  refetchIntervalMinutes: 5
+  preview:
+    open: true
+  prsLimit: 20
+  issuesLimit: 20

@@ -1,0 +1,9 @@
+-- Keymaps are automatically loaded on the VeryLazy event
+-- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
+-- Add any additional keymaps here
+--
+-- Buffer/window behaviour uses LazyVim built-ins:
+--   <leader>bd  delete buffer, KEEP window + layout (Snacks.bufdelete)
+--   <leader>bD  delete buffer AND close its window
+--   <leader>e   toggle file tree (rooted at project root)
+--   <leader>E   toggle file tree (rooted at cwd)
