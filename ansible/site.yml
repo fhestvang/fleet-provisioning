@@ -14,3 +14,11 @@
 # Future: a `system` role for sudo-requiring tasks (packages, systemd units,
 # users). Left out for now — the tinys need a sudo password and the user-local
 # install.sh path covers tooling without root.
+
+# spark's GPU / serving units (vLLM, headroom, runner), codified for
+# reproducibility. Enables but does not restart running services.
+- name: Codify GPU host services
+  hosts: gpu
+  gather_facts: true
+  roles:
+    - system

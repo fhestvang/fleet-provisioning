@@ -1,0 +1,23 @@
+[Unit]
+Description=Spark vLLM OpenAI API (%i)
+Documentation=file:%h/github/fos/platform/models/vllm-runtime/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.config/vllm/%i.env
+ExecStart=%h/github/fos/platform/models/vllm-runtime/run-vllm.sh
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=20s
+StartLimitIntervalSec=10min
+StartLimitBurst=3
+TimeoutStartSec=10min
+TimeoutStopSec=2min
+LimitNOFILE=65536
+WorkingDirectory=%h/github/fos
+
+[Install]
+WantedBy=default.target

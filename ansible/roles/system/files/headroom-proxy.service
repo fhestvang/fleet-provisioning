@@ -1,0 +1,23 @@
+[Unit]
+Description=Headroom context-compression proxy (vLLM upstream)
+Documentation=file:%h/github/fos/platform/models/headroom-proxy/README.md
+# Compress in front of vLLM; only useful once vLLM is up.
+After=network-online.target vllm-coder-30b.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.config/headroom/headroom-spark.env
+ExecStart=%h/github/fos/platform/models/headroom-proxy/run-proxy.sh
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=10s
+StartLimitIntervalSec=10min
+StartLimitBurst=3
+TimeoutStartSec=3min
+TimeoutStopSec=30s
+LimitNOFILE=65536
+WorkingDirectory=%h/github/fos
+
+[Install]
+WantedBy=default.target

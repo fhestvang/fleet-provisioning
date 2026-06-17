@@ -1,0 +1,25 @@
+[Unit]
+Description=Spark vLLM OpenAI API (Qwen3-Coder-30B-A3B-Instruct-FP8)
+Documentation=file:%h/github/fos/platform/models/vllm-runtime/README.md
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=20min
+StartLimitBurst=3
+
+[Service]
+Type=simple
+# Pass the env file as an argument so run-vllm.sh sources it with bash (handles
+# the quoted JSON in VLLM_EXTRA_ARGS); systemd EnvironmentFile would mangle it.
+ExecStart=%h/github/fos/platform/models/vllm-runtime/run-vllm.sh %h/.config/vllm/qwen3-coder-30b-fp8.env
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=20s
+# 30 GB FP8 checkpoint loads faster than the 122B, but allow for graph capture.
+TimeoutStartSec=10min
+TimeoutStopSec=2min
+LimitNOFILE=65536
+WorkingDirectory=%h/github/fos
+
+[Install]
+WantedBy=default.target

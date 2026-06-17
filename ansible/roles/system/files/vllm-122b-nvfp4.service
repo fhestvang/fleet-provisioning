@@ -1,0 +1,25 @@
+[Unit]
+Description=Spark vLLM OpenAI API (Qwen3.5-122B-A10B-NVFP4)
+Documentation=file:%h/github/fos/platform/models/vllm-runtime/README.md
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=20min
+StartLimitBurst=3
+
+[Service]
+Type=simple
+# Pass the env file as an argument so run-vllm.sh sources it with bash (handles
+# the quoted JSON in VLLM_EXTRA_ARGS); systemd EnvironmentFile would mangle it.
+ExecStart=%h/github/fos/platform/models/vllm-runtime/run-vllm.sh %h/.config/vllm/qwen-122b-nvfp4.env
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=20s
+# Loading the ~70 GB checkpoint + CUDA-graph capture takes ~8 min.
+TimeoutStartSec=15min
+TimeoutStopSec=2min
+LimitNOFILE=65536
+WorkingDirectory=%h/github/fos
+
+[Install]
+WantedBy=default.target
