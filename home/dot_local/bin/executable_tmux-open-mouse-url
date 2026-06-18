@@ -3,6 +3,12 @@ set -euo pipefail
 
 opener="${TMUX_OPEN_MOUSE_URL_OPENER:-$HOME/.local/bin/open-on-laptop}"
 
+# Args from the tmux binding:
+#   $1 mouse_hyperlink   OSC 8 hyperlink target under the mouse (often empty)
+#   $2 mouse_word        word under the mouse (URL-fragmenting word-separators)
+#   $3 mouse_line        the VISUAL line under the mouse (truncated when wrapped)
+#   $4 pane_id           pane under the mouse, used to recover wrapped URLs
+
 notify() {
   local message="$1"
   if [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then
@@ -37,27 +43,68 @@ trim_url() {
 
 extract_url() {
   local text="$1"
-  local match
   local url_re='https?://[^[:space:]"<>]+'
 
   if [[ "$text" =~ $url_re ]]; then
-    match="${BASH_REMATCH[0]}"
-    trim_url "$match"
+    trim_url "${BASH_REMATCH[0]}"
     return 0
   fi
 
   return 1
 }
 
-for candidate in "$@"; do
-  [ -n "${candidate//[[:space:]]/}" ] || continue
+# Print every URL on its own line, trimmed of surrounding punctuation.
+extract_all_urls() {
+  grep -oE 'https?://[^[:space:]"<>]+' <<<"$1" | while IFS= read -r raw; do
+    trim_url "$raw"
+  done
+}
 
-  if url="$(extract_url "$candidate")" && [[ "$url" =~ ^https?:// ]]; then
-    "$opener" "$url"
-    notify "Opened $url"
-    exit 0
+open_url() {
+  "$opener" "$1"
+  notify "Opened $1"
+  exit 0
+}
+
+# 1. An OSC 8 hyperlink is always the full, exact target. Prefer it.
+if hyperlink="$(extract_url "${1:-}")" && [[ "$hyperlink" =~ ^https?:// ]]; then
+  open_url "$hyperlink"
+fi
+
+# 2. The word/line under the mouse may be a TRUNCATED fragment, because long
+#    URLs wrap across visual lines and word-separators split on :/.?#. Take the
+#    fragment, then reconstruct the full URL from the joined (un-wrapped) pane.
+fragment=""
+for candidate in "${2:-}" "${3:-}"; do
+  if frag="$(extract_url "$candidate")" && [[ "$frag" =~ ^https?:// ]]; then
+    fragment="$frag"
+    break
   fi
 done
+
+pane="${4:-}"
+if [ -n "$pane" ] && [ -n "${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then
+  # -J joins wrapped lines back into their logical line, restoring full URLs.
+  joined="$(tmux capture-pane -p -J -t "$pane" 2>/dev/null || true)"
+  if [ -n "$joined" ]; then
+    best=""
+    while IFS= read -r url; do
+      [ -n "$url" ] || continue
+      if [ -n "$fragment" ]; then
+        # Keep the longest URL the fragment is a prefix of (the wrapped one).
+        case "$url" in
+          "$fragment"*) [ "${#url}" -gt "${#best}" ] && best="$url" ;;
+        esac
+      elif [ -z "$best" ]; then
+        best="$url"   # no fragment: fall back to the first URL in the pane
+      fi
+    done < <(extract_all_urls "$joined")
+    [ -n "$best" ] && open_url "$best"
+  fi
+fi
+
+# 3. No pane reconstruction available: open the fragment if we have a whole one.
+[ -n "$fragment" ] && open_url "$fragment"
 
 notify "No URL under mouse"
 exit 0
