@@ -1,0 +1,15 @@
+# Universal zsh environment (chezmoi-managed; read by EVERY zsh — interactive,
+# `zsh -c`, and scripts). Interactive-only settings stay in .zshrc.
+
+# OpenBao endpoint: the address used to *reach* Bao. Not a secret, and it can't
+# live in Bao (chicken-and-egg). Tailscale Service, port-less 443, cert trusted
+# by the system store, so no VAULT_CACERT needed.
+export VAULT_ADDR="https://bao.olm-hops.ts.net"
+
+# Make the user-local zsh's modules resolvable in NON-interactive shells too.
+# The relocated (deb-extracted) zsh keeps its modules outside the compiled-in
+# default path, so without this a subshell (e.g. carapace's shell-bridge) errors
+# with "failed to load module zsh/zpty". Guarded, so it's a no-op on a system zsh.
+_zsh_mod="$HOME/.local/opt/zsh-ubuntu/usr/lib/$(uname -m)-linux-gnu/zsh/${ZSH_VERSION}"
+[ -d "$_zsh_mod" ] && module_path=("$_zsh_mod" $module_path)
+unset _zsh_mod
