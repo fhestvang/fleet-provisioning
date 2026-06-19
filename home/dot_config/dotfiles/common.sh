@@ -183,13 +183,14 @@ __dotfiles_wezterm_set_user_var() {
 __dotfiles_update_wezterm_context() {
   local image_paste_host
 
-  # Image pastes target spark from every machine: the agents (Claude/Codex)
-  # all run there, and a 'local' stamp from a laptop prompt poisons the pane
-  # var so later spark tmux work uploads into WSL where agents can't see it
-  # (2026-06-12 diagnosis). Override per-shell with CODEX_IMAGE_PASTE_HOST.
-  case "$DOTFILES_MACHINE" in
-    *) image_paste_host="${CODEX_IMAGE_PASTE_HOST:-spark}" ;;
-  esac
+  # Stamp the image-paste host as the machine this prompt runs on, so a pasted
+  # screenshot lands where the agent reading it actually runs: laptop shells keep
+  # pastes local, spark shells upload to spark. Agents now run on both machines,
+  # so the old blanket 'spark' target (2026-06-12) misrouted laptop pastes. This
+  # runs every prompt, so moving between machines (e.g. `ts` into spark and back)
+  # re-stamps the pane and never leaves a stale host. Override per-shell with
+  # CODEX_IMAGE_PASTE_HOST to force a different target.
+  image_paste_host="${CODEX_IMAGE_PASTE_HOST:-$DOTFILES_MACHINE}"
 
   __dotfiles_wezterm_set_user_var FHH_HOST "$DOTFILES_MACHINE"
   __dotfiles_wezterm_set_user_var FHH_IMAGE_PASTE_HOST "$image_paste_host"
