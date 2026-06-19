@@ -1,0 +1,18 @@
+{{ if eq .role "spark" -}}
+#!/usr/bin/env bash
+# Spark's GPU/serving user systemd units are managed by chezmoi (see
+# dot_config/systemd/user/*.service), migrated from the retired Ansible system
+# role on 2026-06-19. Re-assert on each converge: reload the unit cache so
+# edits take effect, and enable the always-on services WITHOUT --now — so a
+# reboot brings them back, but a converge never restarts or disrupts a running
+# vLLM / headroom. (vllm-122b-nvfp4 stays on-demand; vllm@ is a template unit.)
+# {{ .hostname }}
+systemctl --user daemon-reload 2>/dev/null || true
+for u in headroom-proxy.service github-actions-runner-fos.service vllm-coder-30b.service; do
+  systemctl --user enable "$u" 2>/dev/null || true
+done
+{{- else -}}
+#!/usr/bin/env bash
+# {{ .hostname }}: not the GPU host; no serving units to manage.
+exit 0
+{{- end }}

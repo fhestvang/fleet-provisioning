@@ -14,8 +14,7 @@ tools.
 |---|---|---|
 | User env: dotfiles, CLI/TUI tools, shell, agent defs | **chezmoi** | pull-model, per-machine templating, single-binary bootstrap |
 | Secrets | **chezmoi + OpenBao** | rendered at apply from `kv/projects/*`; never in the repo |
-| System: packages (sudo), systemd services, users | **Ansible** | `ansible/` — system role is a stub for now |
-| Fleet orchestration + VPC discovery | **Ansible** | static `hosts.ini` (pets) + `scaleway.yml` dynamic inventory (cattle) |
+| System: Spark serving stack (user systemd units) | **chezmoi** | `dot_config/systemd/user/*.service`, spark-only via `.chezmoiignore`; a `run_after` hook does `daemon-reload` + enable. No root/apt — user-local by design. |
 
 chezmoi is the convergence engine; for now it **drives the hardened
 `dotfiles/install.sh`** (tools/stow/plugins) via a `run_onchange` script rather
@@ -34,11 +33,8 @@ per-machine facts (`role`, `isAgentHost`, `baoReachable`), clones+runs the
 dotfiles installer, runs agent-sync on agent hosts, and renders secrets where
 OpenBao is reachable.
 
-Across the fleet from a control node:
-
-```sh
-cd ansible && ansible-playbook site.yml
-```
+There's no push/control-node step: every box self-converges on an hourly
+`chezmoi update` cron (`run_after_02-install-sync-cron`).
 
 ## Per-machine facts (`home/.chezmoi.toml.tmpl`)
 
@@ -56,8 +52,7 @@ rendered file is `0600` (`private_` prefix) and is `.gitignore`d.
 (TLS/CA trust or the port-less proxy). So `baoReachable` is false on the tinys,
 and `.chezmoiignore` skips the secret file there — the existing
 `dotfiles-fleet-linear-key` materialize stays the fleet path until Bao-on-fleet
-(CA trust + per-machine AppRole) is solved. That same work unblocks Ansible
-`hashi_vault` lookups and the VPC plan.
+(CA trust + per-machine AppRole) is solved. That same work unblocks the VPC plan.
 
 ## Coexistence & cutover (transition state)
 

@@ -15,29 +15,30 @@ This repo converges them onto established tools.
 ## Target model
 
 ```
-            ┌──────────────────────────── Ansible ───────────────────────────┐
-            │  system plane (packages/sudo, services, users)  +  orchestration │
-            │  static inventory (pets) + Scaleway dynamic inventory (VPCs)      │
-            └───────────────────────────────┬─────────────────────────────────┘
-                                             │ runs, per host
-                                             ▼
             ┌──────────────────────────── chezmoi ───────────────────────────┐
-            │  user-env plane: dotfiles, tools, shell, agent defs, secrets     │
+            │  one plane: dotfiles, tools, shell, agent defs, secrets, and the │
+            │  Spark serving stack's user systemd units                        │
             │  pull-model: `chezmoi init --apply`; per-machine data; Bao secrets│
             └─────────────────────────────────────────────────────────────────┘
 ```
 
-- **Pull** (chezmoi / `ansible-pull`) self-converges a box — scales to VPCs that
-  boot and provision themselves (cloud-init runs the bootstrap).
-- **Push** (`ansible-playbook site.yml`) converges the known fleet from a control
-  node.
+- **Pull only.** Each box self-converges on an hourly `chezmoi update` cron — no
+  control-node push. This scales to VPCs that boot and provision themselves
+  (cloud-init runs `chezmoi init --apply`).
+- **No Ansible.** The fleet is entirely user-local (user systemd units,
+  user-local tools, no root/apt), so a system/push tool had nothing to do.
+  Spark's serving units (vLLM/headroom/runner) live in `dot_config/systemd/user/`,
+  spark-gated via `.chezmoiignore`, with a `run_after` hook doing `daemon-reload`
+  + enable. Reintroduce Ansible only if real root/apt fleet management ever
+  becomes necessary.
 
 ## VPC path (cattle), when instances exist
 
 1. Terraform/OpenTofu creates instances tagged `fleet`.
 2. cloud-init: install Tailscale with an ephemeral, tagged, pre-auth key (joins
    the tailnet, no manual key copy), then `chezmoi init --apply`.
-3. `inventory/scaleway.yml` auto-discovers them by tag for ongoing Ansible runs.
+3. They self-converge on the hourly `chezmoi update` cron — no control-node or
+   Ansible step; discovery is just Tailscale + tags.
 4. Access via Tailscale SSH + ACLs (no per-host authorized_keys / known_hosts).
 
 ## Migration status
@@ -47,13 +48,12 @@ This repo converges them onto established tools.
 | chezmoi installed (Spark) + repo scaffolded | ✅ done |
 | chezmoi source: per-machine data, install.sh driver, agent-sync, Linear secret | ✅ done |
 | Validated rendering on Spark (data + secret) without mutating any home | ✅ done |
-| Ansible scaffold: inventory (static + Scaleway stub), site.yml, chezmoi role | ✅ done |
+| Ansible removed; Spark serving units migrated into chezmoi (`dot_config/systemd/user`) | ✅ done (2026-06-19) |
 | **Cutover: chezmoi the live manager on spark + eigil + dicte + pi3** | ✅ done (2026-06-17), pull via @hourly cron; repo made public |
 | Retire the dotfiles commit-hook fan-out | ✅ done — hook + dotfiles-fleet-sync deleted |
 | **Bao reachable from the fleet** | ✅ done — ACL grant + read-only AppRole token |
 | ingvild left un-cut-over (hands-on session); laptop pending (user runs init) | ⏳ intentional |
 | Scaleway VPC lab (tag:scw-vm, cloud-init) | ✅ config in terraform/lab/, ready to apply |
-| System Ansible role (sudo packages/services) | ⏳ stub |
 
 ## RESOLVED (2026-06-17): OpenBao from the fleet
 

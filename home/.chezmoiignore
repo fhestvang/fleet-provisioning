@@ -1,0 +1,10 @@
+{{ if ne .role "spark" }}
+{{/* Spark's GPU/serving user systemd units are spark-only; never deploy them
+     on the tinys/laptop. Migrated from the retired Ansible system role
+     (2026-06-19). */}}
+.config/systemd/user/vllm@.service
+.config/systemd/user/vllm-122b-nvfp4.service
+.config/systemd/user/vllm-coder-30b.service
+.config/systemd/user/headroom-proxy.service
+.config/systemd/user/github-actions-runner-fos.service
+{{ end }}

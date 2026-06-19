@@ -24,8 +24,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: actionlint (workflow lint)
         uses: raven-actions/actionlint@v2
-      - name: yamllint (ansible + workflows)
-        run: pipx run yamllint -d relaxed ansible .github || true
+      - name: yamllint (workflows)
+        run: pipx run yamllint -d relaxed .github || true
       - name: chezmoi template sanity
         run: |
           sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
