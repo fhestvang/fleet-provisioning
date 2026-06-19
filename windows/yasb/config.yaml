@@ -1,0 +1,94 @@
+watch_stylesheet: true
+watch_config: true
+debug: false
+
+bars:
+  status-bar:
+    enabled: true
+    screens: ['*']
+    class_name: "yasb-bar"
+    alignment:
+      position: "top"
+      align: "center"
+    blur_effect:
+      enabled: true
+      dark_mode: true
+      round_corners: true
+      round_corners_type: "normal"
+      border_color: "System"
+    window_flags:
+      # Behind app windows in z-order so the bar's DWM drop shadow is covered by the
+      # window tops instead of casting onto them. GlazeWM reserves this top strip, so
+      # no tiled window ever overlaps the bar.
+      always_on_top: false
+      windows_app_bar: false
+    dimensions:
+      # Percentage so the bar stretches per-monitor (fixed px only fit the laptop
+      # screen). 99% sits flush with the GlazeWM window edges; must be a whole
+      # number — decimals fail YASB's width validator.
+      width: "99%"
+      height: 38
+    padding:
+      top: 10
+      left: 0
+      bottom: 0
+      right: 0
+    widgets:
+      left: ["glazewm_workspaces"]
+      center: ["clock"]
+      right: ["cpu", "memory", "volume", "wifi", "battery", "systray"]
+
+widgets:
+  glazewm_workspaces:
+    type: "glazewm.workspaces.GlazewmWorkspacesWidget"
+    options:
+      offline_label: "GlazeWM offline"
+
+  clock:
+    type: "yasb.clock.ClockWidget"
+    options:
+      label: "{%a %d %b  %H:%M}"
+      label_alt: "{%A %d %B %Y}"
+      timezones: []
+
+  cpu:
+    type: "yasb.cpu.CpuWidget"
+    options:
+      label: " {info[percent][total]}%"
+      label_alt: " {info[histograms][cpu_percent]}"
+      update_interval: 2000
+
+  memory:
+    type: "yasb.memory.MemoryWidget"
+    options:
+      label: " {virtual_mem_percent}%"
+      label_alt: " {virtual_mem_free}"
+      update_interval: 5000
+
+  volume:
+    type: "yasb.volume.VolumeWidget"
+    options:
+      label: " {level}"
+      label_alt: "{volume_label}"
+
+  wifi:
+    type: "yasb.wifi.WifiWidget"
+    options:
+      label: "{wifi_icon}"
+      label_alt: "{wifi_name} ({wifi_strength}%)"
+      wifi_icons: ["󰤫", "󰤟", "󰤢", "󰤥", "󰤨"]
+
+  battery:
+    type: "yasb.battery.BatteryWidget"
+    options:
+      label: "{icon} {percent}%"
+      label_alt: "{icon} {percent}% ({time_remaining})"
+
+  systray:
+    type: "yasb.systray.SystrayWidget"
+    options:
+      icon_size: 16
+      show_unpinned: true
+      show_unpinned_button: true
+      show_battery: false
+      show_volume: false

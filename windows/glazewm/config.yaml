@@ -1,0 +1,197 @@
+general:
+  # Start YASB together with GlazeWM, and stop it on exit.
+  startup_commands: ['shell-exec yasbc start']
+  shutdown_commands: ['shell-exec yasbc stop']
+  config_reload_commands: []
+
+  # Focus the window directly under the cursor.
+  focus_follows_cursor: false
+
+  # Toggle back to the previous workspace when re-focusing the current one.
+  toggle_workspace_on_refocus: false
+
+  # Jump the cursor to the focused window/monitor.
+  cursor_jump:
+    enabled: true
+    trigger: 'monitor_focus'
+
+  # 'cloak' keeps windows in the taskbar across workspaces; 'hide' removes them.
+  hide_method: 'cloak'
+  show_all_in_taskbar: false
+
+gaps:
+  scale_with_dpi: true
+  inner_gap: '12px'
+  outer_gap:
+    # Top gap leaves room for the floating YASB bar.
+    top: '56px'
+    right: '12px'
+    bottom: '12px'
+    left: '12px'
+
+window_effects:
+  focused_window:
+    border:
+      enabled: false
+      color: '#9399b2'
+    corner_style:
+      enabled: true
+      style: 'rounded'
+    transparency:
+      enabled: true
+      opacity: '94%'
+  other_windows:
+    border:
+      enabled: true
+      color: '#45475a'
+    corner_style:
+      enabled: true
+      style: 'rounded'
+    transparency:
+      enabled: true
+      opacity: '86%'
+
+window_behavior:
+  initial_state: 'tiling'
+  state_defaults:
+    floating:
+      centered: true
+      shown_on_top: false
+    fullscreen:
+      maximized: false
+      shown_on_top: false
+
+workspaces:
+  - name: '1'
+  - name: '2'
+  - name: '3'
+  - name: '4'
+  - name: '5'
+  - name: '6'
+  - name: '7'
+  - name: '8'
+  - name: '9'
+
+window_rules:
+  # Some applications (e.g. installers) get confused by managing, so float them.
+  - commands: ['ignore']
+    match:
+      - window_process: { equals: 'yasb' }
+      - window_process: { equals: 'zebar' }
+      # Task Manager requires elevation to manage and should be ignored.
+      - window_process: { equals: 'Taskmgr' }
+      # Picture-in-picture windows.
+      - window_title: { regex: '[Pp]icture.in.[Pp]icture' }
+        window_class: { regex: 'Chrome_WidgetWin_1|MozillaDialogClass' }
+
+binding_modes:
+  # Enter with alt+r; arrow/hjkl keys resize; escape/enter to exit.
+  - name: 'resize'
+    keybindings:
+      - commands: ['resize --width -2%']
+        bindings: ['h', 'left']
+      - commands: ['resize --width +2%']
+        bindings: ['l', 'right']
+      - commands: ['resize --height +2%']
+        bindings: ['k', 'up']
+      - commands: ['resize --height -2%']
+        bindings: ['j', 'down']
+      - commands: ['wm-disable-binding-mode --name resize']
+        bindings: ['escape', 'enter']
+
+keybindings:
+  # Shift focus in a given direction.
+  - commands: ['focus --direction left']
+    bindings: ['alt+h', 'alt+left']
+  - commands: ['focus --direction right']
+    bindings: ['alt+l', 'alt+right']
+  - commands: ['focus --direction up']
+    bindings: ['alt+k', 'alt+up']
+  - commands: ['focus --direction down']
+    bindings: ['alt+j', 'alt+down']
+
+  # Move focused window in a given direction.
+  - commands: ['move --direction left']
+    bindings: ['alt+shift+h', 'alt+shift+left']
+  - commands: ['move --direction right']
+    bindings: ['alt+shift+l', 'alt+shift+right']
+  - commands: ['move --direction up']
+    bindings: ['alt+shift+k', 'alt+shift+up']
+  - commands: ['move --direction down']
+    bindings: ['alt+shift+j', 'alt+shift+down']
+
+  # Resize mode.
+  - commands: ['wm-enable-binding-mode --name resize']
+    bindings: ['alt+r']
+
+  # Change tiling direction (horizontal/vertical split).
+  - commands: ['toggle-tiling-direction']
+    bindings: ['alt+v']
+
+  # Change the focused window between tiling / floating / fullscreen / minimized.
+  - commands: ['toggle-floating --centered']
+    bindings: ['alt+shift+space']
+  - commands: ['toggle-fullscreen']
+    bindings: ['alt+f']
+  - commands: ['toggle-minimized']
+    bindings: ['alt+m']
+
+  # Close the focused window.
+  - commands: ['close']
+    bindings: ['alt+shift+q']
+
+  # Kill GlazeWM (and YASB via shutdown_commands).
+  - commands: ['wm-exit']
+    bindings: ['alt+shift+e']
+
+  # Reload the GlazeWM config.
+  - commands: ['wm-reload-config']
+    bindings: ['alt+shift+r']
+
+  # Redraw all windows.
+  - commands: ['wm-redraw']
+    bindings: ['alt+shift+w']
+
+  # Launchers.
+  - commands: ['shell-exec C:\Users\Bruger\AppData\Local\Programs\wezterm\wezterm-gui.exe']
+    bindings: ['alt+enter']
+
+  # Focus the workspace in the given number.
+  - commands: ['focus --workspace 1']
+    bindings: ['alt+1']
+  - commands: ['focus --workspace 2']
+    bindings: ['alt+2']
+  - commands: ['focus --workspace 3']
+    bindings: ['alt+3']
+  - commands: ['focus --workspace 4']
+    bindings: ['alt+4']
+  - commands: ['focus --workspace 5']
+    bindings: ['alt+5']
+  - commands: ['focus --workspace 6']
+    bindings: ['alt+6']
+  - commands: ['focus --workspace 7']
+    bindings: ['alt+7']
+  - commands: ['focus --workspace 8']
+    bindings: ['alt+8']
+  - commands: ['focus --workspace 9']
+    bindings: ['alt+9']
+
+  # Move the focused window to a workspace and follow focus to it.
+  - commands: ['move --workspace 1', 'focus --workspace 1']
+    bindings: ['alt+shift+1']
+  - commands: ['move --workspace 2', 'focus --workspace 2']
+    bindings: ['alt+shift+2']
+  - commands: ['move --workspace 3', 'focus --workspace 3']
+    bindings: ['alt+shift+3']
+  - commands: ['move --workspace 4', 'focus --workspace 4']
+    bindings: ['alt+shift+4']
+  - commands: ['move --workspace 5', 'focus --workspace 5']
+    bindings: ['alt+shift+5']
+  - commands: ['move --workspace 6', 'focus --workspace 6']
+    bindings: ['alt+shift+6']
+  - commands: ['move --workspace 7', 'focus --workspace 7']
+    bindings: ['alt+shift+7']
+  - commands: ['move --workspace 8', 'focus --workspace 8']
+    bindings: ['alt+shift+8']
+  - commands: ['move --workspace 9', 'focus --workspace 9']
+    bindings: ['alt+shift+9']
