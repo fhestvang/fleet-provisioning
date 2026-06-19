@@ -2,10 +2,19 @@
 #!/usr/bin/env bash
 # Agent-definition plane (agent-sync): only on agent hosts (spark/laptop).
 # The tinys are not agent hosts, so this renders to a no-op there.
-#   marker: v1
+#   marker: v2
 set -euo pipefail
 toolkit="$HOME/github/fhh-toolkit"
+# Keep the toolkit checkout current so every converge deploys the same agent
+# runtime fleet-wide (mirrors the dotfiles pull in run_after_10). Without the
+# pull the checkout silently drifts and re-deploys stale config. Local edits
+# block --ff-only, so a dirty checkout is left as-is rather than clobbered.
+if [ ! -d "$toolkit/.git" ]; then
+  mkdir -p "$HOME/github"
+  git clone https://github.com/fhestvang/fhh-toolkit.git "$toolkit" || true
+fi
 [ -d "$toolkit" ] || { echo "agent-sync: fhh-toolkit not present, skipping"; exit 0; }
+git -C "$toolkit" pull --ff-only || true
 for s in runtimes/codex/sync-config.sh runtimes/claude/sync-config.sh; do
   [ -x "$toolkit/$s" ] && "$toolkit/$s" || true
 done
