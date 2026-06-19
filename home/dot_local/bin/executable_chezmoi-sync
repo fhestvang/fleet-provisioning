@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Hourly fleet convergence tick (invoked by cron; see run_after_02).
+#
+# Why --init --force: cron has no controlling TTY. Plain `chezmoi update` (a) can
+# only prompt-then-skip when a target was edited outside chezmoi ("could not open
+# a new TTY"), leaving that file permanently drifted, and (b) never regenerates
+# the generated config when .chezmoi.toml.tmpl changes ("config file template has
+# changed"). --force reconciles externally-edited files non-interactively and
+# --init recreates the config from the template, so both self-heal.
+#
+# Failures are surfaced (status file + log marker + desktop notify if available)
+# instead of silently appending to a log nobody reads.
+set -uo pipefail
+
+log="$HOME/.cache/chezmoi-update.log"
+status="$HOME/.cache/chezmoi-sync.status"
+mkdir -p "$HOME/.cache"
+
+{
+  echo "=== chezmoi-sync $(date -Is) on $(hostname) ==="
+  chezmoi update --init --force
+} >>"$log" 2>&1
+rc=$?
+
+if [ "$rc" -eq 0 ]; then
+  printf 'ok %s\n' "$(date -Is)" >"$status"
+else
+  msg="chezmoi-sync FAILED (rc=$rc) on $(hostname) -- see $log"
+  printf 'FAIL rc=%s %s\n' "$rc" "$(date -Is)" >"$status"
+  echo "$msg" >>"$log"
+  command -v notify-send >/dev/null 2>&1 && notify-send -u critical "chezmoi-sync" "$msg" || true
+fi
+exit "$rc"
