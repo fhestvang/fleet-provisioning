@@ -137,9 +137,15 @@ fi
 # Sandcastle Control Center
 alias scc='node "$HOME/github/fos-workbench/scripts/sandcastle-control-center.mjs"'
 
-# Local k3s tutorial cluster.
-if [ -z "${KUBECONFIG:-}" ] && [ -r "$HOME/.kube/fos-workbench-k3s.yaml" ]; then
-  export KUBECONFIG="$HOME/.kube/fos-workbench-k3s.yaml"
+# kube cluster default: prefer the tinys cluster (Spark/laptop manage it
+# remotely via tinys.yaml); fall back to the local k3s config on the tinys
+# themselves, where 127.0.0.1:6443 is the live cluster.
+if [ -z "${KUBECONFIG:-}" ]; then
+  if [ -r "$HOME/.kube/tinys.yaml" ]; then
+    export KUBECONFIG="$HOME/.kube/tinys.yaml"
+  elif [ -r "$HOME/.kube/fos-workbench-k3s.yaml" ]; then
+    export KUBECONFIG="$HOME/.kube/fos-workbench-k3s.yaml"
+  fi
 fi
 
 # bun completions
