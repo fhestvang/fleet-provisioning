@@ -127,5 +127,17 @@ scw-instance-create hostname:
 
 # Verify a converged Scaleway instance over the tailnet.
 scw-instance-verify hostname:
-    tailscale ping --c 1 {{hostname}}
-    tailscale ssh fhestvang@{{hostname}} 'hostname; whoami; chezmoi data | grep -E "hostname|role|hasFhhToolkit"; for c in mise node nvim lazygit codex claude pi; do printf "%s=" "$c"; command -v "$c"; done; bao kv get -field=GITHUB_TOKEN kv/projects/fos/shared/github-cli >/dev/null; test -d ~/github/fhh-toolkit/.git; crontab -l | grep chezmoi-sync'
+    #!/usr/bin/env bash
+    set -euo pipefail
+    hostname='{{hostname}}'
+    tailscale ping --until-direct=false --c 1 "$hostname"
+    tailscale_ip="$(
+      tailscale status --json \
+        | jq -r --arg hostname "$hostname" '.Peer[]? | select(.HostName == $hostname) | .TailscaleIPs[0]' \
+        | head -n1
+    )"
+    [ -n "$tailscale_ip" ] && [ "$tailscale_ip" != "null" ] || {
+      echo "ERROR: $hostname is not visible in Tailscale status" >&2
+      exit 1
+    }
+    tailscale ssh "fhestvang@$tailscale_ip" 'hostname; whoami; chezmoi data | grep -E "hostname|role|hasFhhToolkit"; for c in mise node nvim lazygit codex claude pi; do printf "%s=" "$c"; command -v "$c"; done; bao kv get -field=GITHUB_TOKEN kv/projects/fos/shared/github-cli >/dev/null; test -d ~/github/fhh-toolkit/.git; crontab -l | grep chezmoi-sync'
