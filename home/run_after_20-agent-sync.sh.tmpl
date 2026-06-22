@@ -4,6 +4,34 @@
 # The tinys are not agent hosts, so this renders to a no-op there.
 #   marker: v2
 set -euo pipefail
+export PATH="$HOME/.local/bin:$PATH"
+export BAO_ADDR="${BAO_ADDR:-https://bao.olm-hops.ts.net}"
+
+git_with_bao_github() {
+  local askpass status
+  askpass=""
+
+  if command -v bao >/dev/null 2>&1 \
+    && bao kv get -field=GITHUB_TOKEN kv/projects/fos/shared/github-cli >/dev/null 2>&1; then
+    askpass="$(mktemp)"
+    cat >"$askpass" <<'SH'
+#!/usr/bin/env sh
+case "$1" in
+  *Username*) printf '%s\n' x-access-token ;;
+  *Password*) BAO_ADDR="${BAO_ADDR:-https://bao.olm-hops.ts.net}" bao kv get -field=GITHUB_TOKEN kv/projects/fos/shared/github-cli 2>/dev/null ;;
+  *) printf '\n' ;;
+esac
+SH
+    chmod 700 "$askpass"
+    GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -c credential.helper= "$@"
+    status=$?
+    rm -f "$askpass"
+    return "$status"
+  fi
+
+  GIT_TERMINAL_PROMPT=0 git -c credential.helper= "$@"
+}
+
 toolkit="$HOME/github/fhh-toolkit"
 # Keep the toolkit checkout current so every converge deploys the same agent
 # runtime fleet-wide (mirrors the dotfiles pull in run_after_10). Without the
@@ -11,10 +39,10 @@ toolkit="$HOME/github/fhh-toolkit"
 # block --ff-only, so a dirty checkout is left as-is rather than clobbered.
 if [ ! -d "$toolkit/.git" ]; then
   mkdir -p "$HOME/github"
-  git clone https://github.com/fhestvang/fhh-toolkit.git "$toolkit" || true
+  git_with_bao_github clone https://github.com/fhestvang/fhh-toolkit.git "$toolkit" || true
 fi
 [ -d "$toolkit" ] || { echo "agent-sync: fhh-toolkit not present, skipping"; exit 0; }
-git -C "$toolkit" pull --ff-only || true
+git_with_bao_github -C "$toolkit" pull --ff-only || true
 for s in runtimes/codex/sync-config.sh runtimes/claude/sync-config.sh; do
   [ -x "$toolkit/$s" ] && "$toolkit/$s" || true
 done
