@@ -1,4 +1,4 @@
-# fleet-provisioning
+# platform-engineering
 
 Convergent workstation provisioning: bring any machine up to "how I work on
 Spark" with one command, across planes: CLI/TUI tools, shell, optional
@@ -40,7 +40,7 @@ For a normal manually-enrolled machine:
 
 ```sh
 sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin
-~/.local/bin/chezmoi init --apply https://github.com/fhestvang/fleet-provisioning.git
+~/.local/bin/chezmoi init --apply https://github.com/fhestvang/platform-engineering.git
 ```
 
 That clones this repo (source is `home/`, see `.chezmoiroot`), computes

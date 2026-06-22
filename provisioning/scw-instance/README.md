@@ -26,7 +26,7 @@ soon after running `just scw-instance-plan`; if the key expires, rerun the plan.
 ## Usage
 
 ```sh
-cd ~/github/fleet-provisioning
+cd ~/github/platform-engineering
 just scw-instance-init
 just scw-instance-plan scw-instance-02
 just scw-instance-apply scw-instance-02

@@ -40,7 +40,7 @@ Prerequisites on the operator machine:
   - AppRole `fleet-kv` with policy `fleet-kv-read`
 - Bao has Scaleway credentials at `kv/projects/scaleway/cli`.
 
-Run from `fleet-provisioning`:
+Run from `platform-engineering`:
 
 ```sh
 just scw-instance-init
@@ -134,7 +134,7 @@ Only use this when debugging cloud-init or OpenTofu.
 
    ```sh
    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin
-   ~/.local/bin/chezmoi --force init --apply https://github.com/fhestvang/fleet-provisioning.git
+   ~/.local/bin/chezmoi --force init --apply https://github.com/fhestvang/platform-engineering.git
    ```
 
 If `chezmoi` stops because a managed file changed during a retry, use:

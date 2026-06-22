@@ -2,7 +2,7 @@
 # Mirrors coding-agent activity (Claude Code, Codex, ...) into the tmux status
 # bar via tmux-agent-state. Renders: working (*), done (!), blocked/help (?).
 #
-# Chezmoi source: fleet-provisioning/home/dot_local/bin/executable_tmux-agent-status.
+# Chezmoi source: platform-engineering/home/dot_local/bin/executable_tmux-agent-status.
 # Live path: ~/.local/bin/tmux-agent-status.
 # Invoked from each runtime's hook config with a single action argument:
 #   tmux-agent-status working   # a turn / tool call is starting
