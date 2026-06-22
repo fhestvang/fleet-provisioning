@@ -46,7 +46,6 @@ Use `root` only as break-glass system access. The working environment is the
 
 ```sh
 ssh scw-instance-02
-tailscale ssh fhestvang@scw-instance-02
 ```
 
 Root intentionally has no dotfiles, mise shims, Bao wrappers, toolkit commands,

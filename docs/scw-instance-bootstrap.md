@@ -65,13 +65,13 @@ After first boot, use the `fhestvang` user:
 
 ```sh
 ssh fhestvang@<public-ip>
-tailscale ssh fhestvang@scw-instance-02
+ssh scw-instance-02
 ```
 
-Use root over Tailscale only when repairing the machine itself:
+Use root only when repairing the machine itself:
 
 ```sh
-tailscale ssh root@scw-instance-02
+ssh root@<public-ip>
 ```
 
 ## Verification
@@ -90,8 +90,7 @@ From Spark or an owner/admin tailnet device:
 
 ```sh
 tailscale ping --c 1 scw-instance-02
-tailscale ssh fhestvang@scw-instance-02 hostname
-tailscale ssh root@scw-instance-02 hostname
+ssh scw-instance-02 hostname
 ```
 
 Expected:

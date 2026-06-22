@@ -10,6 +10,6 @@ output "ssh" {
   value = "ssh ${var.operator_user}@${scaleway_instance_server.instance.name}.olm-hops.ts.net"
 }
 
-output "tailscale_ssh" {
-  value = "tailscale ssh ${var.operator_user}@${scaleway_instance_server.instance.name}"
+output "tailnet_ssh" {
+  value = "ssh ${scaleway_instance_server.instance.name}"
 }

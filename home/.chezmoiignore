@@ -1,4 +1,15 @@
-{{ if ne .role "spark" }}
+{{- $role := "tiny" -}}
+{{- if hasKey . "role" -}}
+{{-   $role = .role -}}
+{{- else -}}
+{{-   $hostname := .chezmoi.hostname -}}
+{{-   if eq $hostname "spark-0cf9" }}{{ $role = "spark" }}{{ end -}}
+{{-   if eq $hostname "pi3" }}{{ $role = "pi" }}{{ end -}}
+{{-   if hasPrefix "desktop-" (lower $hostname) }}{{ $role = "laptop" }}{{ end -}}
+{{-   if eq $hostname "ingvild" }}{{ $role = "ingvild" }}{{ end -}}
+{{-   if hasPrefix "scw-" (lower $hostname) }}{{ $role = "scw-instance" }}{{ end -}}
+{{- end -}}
+{{ if ne $role "spark" }}
 {{/* Spark's GPU/serving user systemd units are spark-only; never deploy them
      on the tinys/laptop. Migrated from the retired Ansible system role
      (2026-06-19). */}}

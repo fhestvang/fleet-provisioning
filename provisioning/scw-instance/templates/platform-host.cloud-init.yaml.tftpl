@@ -39,6 +39,15 @@ write_files:
       #!/usr/bin/env bash
       set -euo pipefail
 
+      install -d -m 700 "$HOME/.config"
+      install -d -m 700 "$HOME/.config/chezmoi"
+      cat > "$HOME/.config/chezmoi/chezmoi.toml" <<'EOF'
+      [data]
+          hostname = "${hostname}"
+          role = "scw-instance"
+          hasFhhToolkit = true
+      EOF
+
       mkdir -p "$HOME/.local/bin"
       if [ ! -x "$HOME/.local/bin/chezmoi" ]; then
         sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
@@ -51,6 +60,7 @@ write_files:
       fi
 
 runcmd:
+  - [bash, -lc, "install -d -m 700 -o ${operator_user} -g ${operator_user} /home/${operator_user}/.config"]
   - [bash, -lc, "install -d -m 700 -o ${operator_user} -g ${operator_user} /home/${operator_user}/.config/bao"]
   - [bash, -lc, "install -m 600 -o ${operator_user} -g ${operator_user} /run/fleet-bootstrap/approle /home/${operator_user}/.config/bao/approle"]
   - [bash, -lc, "if ! command -v tailscale >/dev/null 2>&1; then curl -fsSL https://tailscale.com/install.sh | sh; fi"]
