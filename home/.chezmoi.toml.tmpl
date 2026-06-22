@@ -5,7 +5,8 @@
 {{- if eq $hostname "pi3" }}{{ $role = "pi" }}{{ end -}}
 {{- if hasPrefix "desktop-" (lower $hostname) }}{{ $role = "laptop" }}{{ end -}}
 {{- if eq $hostname "ingvild" }}{{ $role = "ingvild" }}{{ end -}}
-{{- $isAgentHost := or (eq $role "spark") (eq $role "laptop") (eq $role "ingvild") -}}
+{{- if hasPrefix "scw-" (lower $hostname) }}{{ $role = "scw-agent" }}{{ end -}}
+{{- $isAgentHost := or (eq $role "spark") (eq $role "laptop") (eq $role "ingvild") (eq $role "scw-agent") -}}
 {{- /* Is OpenBao reachable from here? (fleet boxes currently are NOT). */ -}}
 {{- $baoProbe := output "sh" "-c" "BAO_ADDR=https://bao.olm-hops.ts.net bao kv get -field=api_key kv/projects/linear >/dev/null 2>&1 && echo yes || echo no" | trim -}}
 [data]

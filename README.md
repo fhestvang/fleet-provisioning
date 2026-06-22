@@ -37,8 +37,8 @@ There's no push/control-node step: every box self-converges on an hourly
 
 ## Per-machine facts (`home/.chezmoi.toml.tmpl`)
 
-- `role`: `spark` | `laptop` | `pi` | `tiny`
-- `isAgentHost`: spark/laptop get agent-definition sync; tinys do not
+- `role`: `spark` | `laptop` | `pi` | `ingvild` | `scw-agent` | `tiny`
+- `isAgentHost`: spark/laptop/ingvild/`scw-*` hosts get agent-definition sync; tinys do not
 - `baoReachable`: whether OpenBao answers from this host
 
 ## Secrets

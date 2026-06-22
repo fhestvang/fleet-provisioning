@@ -36,7 +36,8 @@ This repo converges them onto established tools.
 
 1. Terraform/OpenTofu creates instances tagged `fleet`.
 2. cloud-init: install Tailscale with an ephemeral, tagged, pre-auth key (joins
-   the tailnet, no manual key copy), then `chezmoi init --apply`.
+   the tailnet, no manual key copy), set the hostname to `scw-*`, then
+   `chezmoi init --apply`.
 3. They self-converge on the hourly `chezmoi update` cron — no control-node or
    Ansible step; discovery is just Tailscale + tags.
 4. Access via Tailscale SSH + ACLs (no per-host authorized_keys / known_hosts).
