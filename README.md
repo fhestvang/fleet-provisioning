@@ -1,18 +1,18 @@
 # fleet-provisioning
 
 Convergent workstation provisioning: bring any machine up to "how I work on
-Spark" with one command, across planes — CLI/TUI tools, shell, agent
-definitions, and secrets.
+Spark" with one command, across planes: CLI/TUI tools, shell, optional
+fhh-toolkit config, and secrets.
 
 This replaced the homegrown trio (`dotfiles/install.sh` push fan-out +
-`agent-sync` + the secret materialize helper) with chezmoi as a single
+toolkit sync + the secret materialize helper) with chezmoi as a single
 pull-model convergence engine.
 
 ## Division of labor
 
 | Plane | Tool | Notes |
 |---|---|---|
-| User env: dotfiles, CLI/TUI tools, shell, agent defs | **chezmoi** | pull-model, per-machine templating, single-binary bootstrap |
+| User env: dotfiles, CLI/TUI tools, shell, toolkit config | **chezmoi** | pull-model, per-machine templating, single-binary bootstrap |
 | Secrets | **chezmoi + OpenBao** | rendered at apply from `kv/projects/*`; never in the repo |
 | System: Spark serving stack (user systemd units) | **chezmoi** | `dot_config/systemd/user/*.service`, spark-only via `.chezmoiignore`; a `run_after` hook does `daemon-reload` + enable. No root/apt — user-local by design. |
 
@@ -26,14 +26,14 @@ For a Scaleway instance, use the OpenTofu/cloud-init path:
 
 ```sh
 just scw-instance-init
-just scw-instance-plan scw-agent-02
-just scw-instance-apply scw-agent-02
-just scw-instance-verify scw-agent-02
+just scw-instance-plan scw-instance-02
+just scw-instance-apply scw-instance-02
+just scw-instance-verify scw-instance-02
 ```
 
-It creates a one-use `tag:scw-agent` Tailscale auth key, renders cloud-init
+It creates a one-use `tag:scw-instance` Tailscale auth key, renders cloud-init
 user-data, provisions fleet Bao AppRole material, runs chezmoi on first boot,
-and verifies `mise` + the agent harnesses. See `docs/scw-instance-bootstrap.md`
+and verifies `mise` + the optional coding CLIs. See `docs/scw-instance-bootstrap.md`
 and `provisioning/scw-instance/`.
 
 For a normal manually-enrolled machine:
@@ -44,8 +44,8 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin
 ```
 
 That clones this repo (source is `home/`, see `.chezmoiroot`), computes
-stable per-machine facts (`role`, `isAgentHost`), runs the dotfiles installer
-for tools, and runs agent-sync on agent hosts. Secrets aren't rendered — the
+stable per-machine facts (`role`, `hasFhhToolkit`), runs the dotfiles installer
+for tools, and syncs fhh-toolkit when that capability is attached. Secrets aren't rendered — the
 per-tool wrappers read Bao at call time (see below).
 
 There's no push/control-node step: every box self-converges on an hourly
@@ -53,22 +53,22 @@ There's no push/control-node step: every box self-converges on an hourly
 
 ## Host resource model
 
-- `root`: bootstrap and break-glass only. Do not expect `mise`, agent commands,
+- `root`: bootstrap and break-glass only. Do not expect `mise`, toolkit commands,
   dotfiles, Bao wrappers, or `fhh-toolkit` in `/root`.
 - `fhestvang`: the normal working user. This is where chezmoi, mise shims, Bao
-  wrappers, shell config, and agent runtime config live.
+  wrappers, shell config, and optional fhh-toolkit config live.
 - `ansible`: legacy/admin user on the tinys. Use it for cluster/system repair
   when needed, not as the day-to-day environment.
 - Bao access is a fleet baseline. Tinys need it for wrappers, Atuin, and
-  convergence, but Bao access does not make a host an agent host.
-- `fhh-toolkit` is agent-host only. It is expected on Spark, laptop, Ingvild,
-  and `scw-agent-*`; it is intentionally absent on ordinary `tiny` hosts like
-  eigil and dicte.
+  convergence, but Bao access does not imply fhh-toolkit.
+- `fhh-toolkit` is an attached capability. It is expected on Spark, laptop,
+  Ingvild, and Scaleway instances; it is intentionally absent on ordinary
+  `tiny` hosts like eigil and dicte.
 
 ## Per-machine facts (`home/.chezmoi.toml.tmpl`)
 
-- `role`: `spark` | `laptop` | `pi` | `ingvild` | `scw-agent` | `tiny`
-- `isAgentHost`: spark/laptop/ingvild/`scw-*` hosts get agent-definition sync; tinys do not
+- `role`: `spark` | `laptop` | `pi` | `ingvild` | `scw-instance` | `tiny`
+- `hasFhhToolkit`: spark/laptop/ingvild/`scw-*` hosts get toolkit sync; tinys do not
 
 ## Secrets
 

@@ -32,7 +32,7 @@ write_files:
     permissions: '0600'
     content: |
       ${replace(chomp(bao_approle_content), "\n", "\n      ")}
-  - path: /usr/local/sbin/fleet-agent-converge
+  - path: /usr/local/sbin/fleet-converge
     owner: root:root
     permissions: '0755'
     content: |
@@ -57,5 +57,5 @@ runcmd:
   - [systemctl, enable, --now, tailscaled]
   - [bash, -lc, "tailscale logout >/dev/null 2>&1 || true"]
   - [bash, -lc, "tailscale up --reset --auth-key=\"$(cat /run/fleet-bootstrap/tailscale-authkey)\" --ssh --accept-dns=true --hostname=${hostname}"]
-  - [bash, -lc, "sudo -iu ${operator_user} /usr/local/sbin/fleet-agent-converge"]
+  - [bash, -lc, "sudo -iu ${operator_user} /usr/local/sbin/fleet-converge"]
   - [bash, -lc, "rm -rf /run/fleet-bootstrap"]

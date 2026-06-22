@@ -6,9 +6,9 @@
 #   foundation  -> exact pins, every host. Critical path (nvim/LazyVim, node,
 #                  go, lazygit) must never silently move and break.
 #   utility     -> float (latest); stable CLIs where churn is harmless.
-#   agents      -> float (latest), agent hosts only. They ship daily; pinning
-#                  them just creates lag. run_after_12 runs `mise upgrade` each
-#                  converge so agent hosts track upstream automatically.
+#   coding CLIs -> float (latest), fhh-toolkit hosts only. They ship daily;
+#                  pinning them just creates lag. run_after_12 runs
+#                  `mise upgrade` each converge so those hosts track upstream.
 
 [tools]
 # --- foundation (exact pins, all hosts) ---
@@ -26,8 +26,8 @@ watchexec = "latest"
 hyperfine = "latest"
 gum = "latest"
 curlie = "latest"
-{{ if .isAgentHost }}
-# --- agent harnesses (float, agent hosts only) ---
+{{ if .hasFhhToolkit }}
+# --- coding CLIs (float, fhh-toolkit hosts only) ---
 # Claude Code ships a native binary; avoid the npm wrapper's postinstall path.
 claude = "latest"
 "npm:@openai/codex" = "latest"

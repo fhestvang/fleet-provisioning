@@ -1,7 +1,7 @@
-{{ if .isAgentHost -}}
+{{ if .hasFhhToolkit -}}
 #!/usr/bin/env bash
-# Agent-definition plane (agent-sync): only on agent hosts (spark/laptop).
-# The tinys are not agent hosts, so this renders to a no-op there.
+# fhh-toolkit plane: only on hosts where the toolkit capability is attached.
+# The tinys are baseline fleet hosts, so this renders to a no-op there.
 #   marker: v2
 set -euo pipefail
 export PATH="$HOME/.local/bin:$PATH"
@@ -33,21 +33,21 @@ SH
 }
 
 toolkit="$HOME/github/fhh-toolkit"
-# Keep the toolkit checkout current so every converge deploys the same agent
-# runtime fleet-wide (mirrors the dotfiles pull in run_after_10). Without the
+# Keep the toolkit checkout current so every converge deploys the same runtime
+# config fleet-wide (mirrors the dotfiles pull in run_after_10). Without the
 # pull the checkout silently drifts and re-deploys stale config. Local edits
 # block --ff-only, so a dirty checkout is left as-is rather than clobbered.
 if [ ! -d "$toolkit/.git" ]; then
   mkdir -p "$HOME/github"
   git_with_bao_github clone https://github.com/fhestvang/fhh-toolkit.git "$toolkit" || true
 fi
-[ -d "$toolkit" ] || { echo "agent-sync: fhh-toolkit not present, skipping"; exit 0; }
+[ -d "$toolkit" ] || { echo "toolkit-sync: fhh-toolkit not present, skipping"; exit 0; }
 git_with_bao_github -C "$toolkit" pull --ff-only || true
 for s in runtimes/codex/sync-config.sh runtimes/claude/sync-config.sh; do
   [ -x "$toolkit/$s" ] && "$toolkit/$s" || true
 done
 {{- else -}}
 #!/usr/bin/env bash
-# {{ .hostname }} is not an agent host; nothing to sync.
+# {{ .hostname }} does not attach fhh-toolkit; nothing to sync.
 exit 0
 {{- end }}

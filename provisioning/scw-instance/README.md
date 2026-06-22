@@ -1,15 +1,15 @@
 # Scaleway Instance Provisioning
 
-This is the clean path for cattle-style Scaleway instances that become
-platform agent hosts.
+This is the clean path for cattle-style Scaleway instances that join the
+platform baseline.
 
 ## Concepts
 
 - OpenTofu owns cloud resources: Instance, public IP, security group, and the
   first-boot user-data payload.
 - Cloud-init runs inside the VM on first boot. It creates `fhestvang`, installs
-  Tailscale, joins the tailnet as `tag:scw-agent`, writes Bao AppRole material,
-  and starts chezmoi convergence.
+  Tailscale, joins the tailnet as `tag:scw-instance`, writes Bao AppRole
+  material, and starts chezmoi convergence.
 - Chezmoi owns the user environment after first boot: dotfiles, mise tools,
   Bao wrappers, `fhh-toolkit`, and hourly convergence.
 - `just` is only the command runner. It gives this module stable commands and
@@ -28,15 +28,15 @@ soon after running `just scw-instance-plan`; if the key expires, rerun the plan.
 ```sh
 cd ~/github/fleet-provisioning
 just scw-instance-init
-just scw-instance-plan scw-agent-02
-just scw-instance-apply scw-agent-02
-just scw-instance-verify scw-agent-02
+just scw-instance-plan scw-instance-02
+just scw-instance-apply scw-instance-02
+just scw-instance-verify scw-instance-02
 ```
 
 For a single create command:
 
 ```sh
-just scw-instance-create scw-agent-02
+just scw-instance-create scw-instance-02
 ```
 
 ## Access Model
@@ -45,19 +45,19 @@ Use `root` only as break-glass system access. The working environment is the
 `fhestvang` user:
 
 ```sh
-ssh scw-agent-02
-tailscale ssh fhestvang@scw-agent-02
+ssh scw-instance-02
+tailscale ssh fhestvang@scw-instance-02
 ```
 
-Root intentionally has no dotfiles, mise shims, Bao wrappers, agent commands,
+Root intentionally has no dotfiles, mise shims, Bao wrappers, toolkit commands,
 or `fhh-toolkit`.
 
 ## Why This Replaced The SSH Bootstrap Script
 
-The old `scripts/bootstrap-scaleway-agent.sh` mixed credential minting,
-remote root SSH, OS setup, tailnet join, chezmoi convergence, and verification.
-That was useful while discovering the process, but it was a shallow interface:
-the caller still had to understand all of the implementation.
+The old SSH bootstrap script mixed credential minting, remote root SSH, OS
+setup, tailnet join, chezmoi convergence, and verification. That was useful
+while discovering the process, but it was a shallow interface: the caller still
+had to understand all of the implementation.
 
 This module has clearer responsibilities:
 

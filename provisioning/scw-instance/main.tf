@@ -1,5 +1,5 @@
 locals {
-  cloud_init = templatefile("${path.module}/templates/agent-host.cloud-init.yaml.tftpl", {
+  cloud_init = templatefile("${path.module}/templates/platform-host.cloud-init.yaml.tftpl", {
     hostname                = var.hostname
     operator_user           = var.operator_user
     operator_ssh_public_key = var.operator_ssh_public_key
@@ -32,7 +32,7 @@ resource "scaleway_instance_server" "instance" {
   image             = var.image
   ip_id             = scaleway_instance_ip.instance.id
   security_group_id = scaleway_instance_security_group.instance.id
-  tags              = concat(["fleet", "agent", "scw-agent"], var.extra_tags)
+  tags              = concat(["fleet", "scaleway", "scw-instance"], var.extra_tags)
   zone              = var.zone
 
   user_data = {

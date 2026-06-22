@@ -6,7 +6,7 @@ The fleet (Spark + eigil/ingvild/dicte/pi3 + future Scaleway VPCs) was convergin
 via three hand-rolled mechanisms:
 
 1. `dotfiles/install.sh` + a commit-hook push fan-out (tools, stow, plugins)
-2. `agent-sync` (agent runtime/skill definitions, agent hosts only)
+2. toolkit sync (`fhh-toolkit` checkout and runtime config, attached hosts only)
 3. `dotfiles-fleet-linear-key` (materialize secrets from Bao to the fleet)
 
 These are a hand-rolled version of one capability: *bring a machine to parity*.
@@ -16,7 +16,7 @@ This repo converges them onto established tools.
 
 ```
             ┌──────────────────────────── chezmoi ───────────────────────────┐
-            │  one plane: dotfiles, tools, shell, agent defs, secrets, and the │
+            │  one plane: dotfiles, tools, shell, toolkit config, secrets, and │
             │  Spark serving stack's user systemd units                        │
             │  pull-model: `chezmoi init --apply`; per-machine data; Bao secrets│
             └─────────────────────────────────────────────────────────────────┘
@@ -37,7 +37,7 @@ This repo converges them onto established tools.
 1. Terraform/OpenTofu creates provider resources. For Scaleway this is the
    `provisioning/scw-instance` root module: instance, public IP, security
    group, and cloud-init user-data.
-2. The operator path creates a one-use Tailscale key tagged `tag:scw-agent`,
+2. The operator path creates a one-use Tailscale key tagged `tag:scw-instance`,
    provisions fleet Bao AppRole material, and passes both into cloud-init.
    Cloud-init joins the tailnet with Tailscale SSH enabled, then runs
    `chezmoi init --apply --force`.
@@ -48,7 +48,7 @@ This repo converges them onto established tools.
    Bao-backed GitHub credential.
 4. They self-converge on the hourly `chezmoi update` cron — no control-node or
    Ansible step; discovery is Tailscale + tags.
-5. Access via Tailscale SSH + ACLs (`tag:scw-agent`) plus public SSH as the
+5. Access via Tailscale SSH + ACLs (`tag:scw-instance`) plus public SSH as the
    break-glass path during initial bootstrap.
 
 ## Migration status
@@ -56,15 +56,15 @@ This repo converges them onto established tools.
 | Phase | State |
 |---|---|
 | chezmoi installed (Spark) + repo scaffolded | ✅ done |
-| chezmoi source: per-machine data, install.sh driver, agent-sync, Linear secret | ✅ done |
+| chezmoi source: per-machine data, install.sh driver, toolkit sync, Linear secret | ✅ done |
 | Validated rendering on Spark (data + secret) without mutating any home | ✅ done |
 | Ansible removed; Spark serving units migrated into chezmoi (`dot_config/systemd/user`) | ✅ done (2026-06-19) |
 | **Cutover: chezmoi the live manager on spark + eigil + dicte + pi3** | ✅ done (2026-06-17), pull via @hourly cron; repo made public |
 | Retire the dotfiles commit-hook fan-out | ✅ done — hook + dotfiles-fleet-sync deleted |
 | **Bao reachable from the fleet** | ✅ done — ACL grant + read-only AppRole token |
-| Ingvild cutover | ✅ done (2026-06-22) — `chezmoi`, Bao, mise, `fhh-toolkit`, agent config |
+| Ingvild cutover | ✅ done (2026-06-22) — `chezmoi`, Bao, mise, `fhh-toolkit`, runtime config |
 | Laptop pending | ⏳ user runs init |
-| Scaleway instance bootstrap for agent hosts (`tag:scw-agent`, chezmoi, mise, fhh-toolkit) | ✅ validated on `scw-agent-01` (2026-06-22); OpenTofu/cloud-init path in progress |
+| Scaleway instance bootstrap (`tag:scw-instance`, chezmoi, mise, fhh-toolkit capability) | ✅ validated manually on the first instance (2026-06-22); OpenTofu/cloud-init path in progress |
 
 ## RESOLVED (2026-06-17): OpenBao from the fleet
 

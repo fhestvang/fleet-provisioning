@@ -1,25 +1,25 @@
 # Scaleway Instance Bootstrap
 
-This is the repeatable path for cattle-style Scaleway instances that become
-agent hosts.
+This is the repeatable path for cattle-style Scaleway instances that join the
+platform baseline.
 
-## What we learned from `scw-agent-01`
+## What we learned from the first Scaleway instance
 
 - Browser-based `tailscale up` is a bad bootstrap primitive over SSH: it looks
   idle while waiting for an approval URL and is easy to interrupt.
-- Scaleway instances that run agent workloads should join the tailnet as
-  `tag:scw-agent`, not as untagged user devices. The tag has narrow grants:
-  Bao, Spark LiteLLM `:8444`, and SSH from owner/admin/dev-laptop/Spark.
+- Scaleway instances should join the tailnet as `tag:scw-instance`, not as
+  untagged user devices. The tag has narrow grants: Bao, Spark LiteLLM `:8444`,
+  and SSH from owner/admin/dev-laptop/Spark.
 - Repair runs against an already-joined VM must drop the old user-owned
   Tailscale identity before the tagged auth key can take effect. Cloud-init
   does this with `tailscale logout` before `tailscale up`.
-- `chezmoi` can install `bao`, but agent sync needs a live Bao token before it
-  clones private `fhh-toolkit`. `run_after_11-bao-relogin` now refreshes
-  `~/.vault-token` from pre-provisioned AppRole material before agent sync.
+- `chezmoi` can install `bao`, but toolkit sync needs a live Bao token before
+  it clones private `fhh-toolkit`. `run_after_11-bao-relogin` now refreshes
+  `~/.vault-token` from pre-provisioned AppRole material before toolkit sync.
 - Run multi-step remote convergence from a script file on the VM, not from a
   multiline `sudo -iu ... bash -lc` string. The latter can collapse newlines
   under login-shell handoff and break shell syntax.
-- `fhh-toolkit` is private. `run_after_20-agent-sync` uses a temporary
+- `fhh-toolkit` is private. `run_after_20-toolkit-sync` uses a temporary
   `GIT_ASKPASS` helper that reads the GitHub token from Bao at call time; the
   token is not written to disk.
 - `mise` tools are shims. The shims path must be in non-interactive shell PATHs,
@@ -33,7 +33,7 @@ agent hosts.
 
 Prerequisites on the operator machine:
 
-- The live Tailscale ACL has `tag:scw-agent` from `fos/platform/tailscale/policy.hujson`.
+- The live Tailscale ACL has `tag:scw-instance` from `fos/platform/tailscale/policy.hujson`.
 - `bao`, `curl`, `jq`, `just`, and `tofu` are installed.
 - Bao has:
   - `kv/projects/fos/shared/tailscale-admin` with `TAILSCALE_API_KEY`
@@ -44,34 +44,34 @@ Run from `fleet-provisioning`:
 
 ```sh
 just scw-instance-init
-just scw-instance-plan scw-agent-02
-just scw-instance-apply scw-agent-02
-just scw-instance-verify scw-agent-02
+just scw-instance-plan scw-instance-02
+just scw-instance-apply scw-instance-02
+just scw-instance-verify scw-instance-02
 ```
 
 The `prepare` step creates a one-use, one-hour auth key tagged
-`tag:scw-agent` and fresh `fleet-kv` AppRole material. OpenTofu creates the
+`tag:scw-instance` and fresh `fleet-kv` AppRole material. OpenTofu creates the
 Scaleway instance, public IP, security group, and cloud-init payload.
 Cloud-init provisions the `fhestvang` user, joins Tailscale with SSH enabled,
-runs `chezmoi`, and the verify step checks the agent toolchain.
+runs `chezmoi`, and the verify step checks the attached toolkit capability.
 
 ## Access Model
 
 Use `root` only for first bootstrap and break-glass system repair. Root is not a
-working environment and intentionally has no `mise`, agent commands, dotfiles,
+working environment and intentionally has no `mise`, toolkit commands, dotfiles,
 Bao wrappers, or `fhh-toolkit`.
 
 After first boot, use the `fhestvang` user:
 
 ```sh
 ssh fhestvang@<public-ip>
-tailscale ssh fhestvang@scw-agent-02
+tailscale ssh fhestvang@scw-instance-02
 ```
 
 Use root over Tailscale only when repairing the machine itself:
 
 ```sh
-tailscale ssh root@scw-agent-02
+tailscale ssh root@scw-instance-02
 ```
 
 ## Verification
@@ -79,7 +79,7 @@ tailscale ssh root@scw-agent-02
 On the VM:
 
 ```sh
-chezmoi data | grep -E 'hostname|role|isAgentHost'
+chezmoi data | grep -E 'hostname|role|hasFhhToolkit'
 for c in mise node nvim lazygit codex claude pi; do command -v "$c"; done
 bao kv get -field=GITHUB_TOKEN kv/projects/fos/shared/github-cli >/dev/null
 test -d ~/github/fhh-toolkit/.git
@@ -89,33 +89,33 @@ crontab -l | grep chezmoi-sync
 From Spark or an owner/admin tailnet device:
 
 ```sh
-tailscale ping --c 1 scw-agent-02
-tailscale ssh fhestvang@scw-agent-02 hostname
-tailscale ssh root@scw-agent-02 hostname
+tailscale ping --c 1 scw-instance-02
+tailscale ssh fhestvang@scw-instance-02 hostname
+tailscale ssh root@scw-instance-02 hostname
 ```
 
 Expected:
 
-- hostname starts with `scw-`
-- chezmoi role is `scw-agent`
-- `isAgentHost` is `true`
-- `codex`, `claude`, and `pi` resolve through mise shims
-- `fhh-toolkit` exists and agent config has synced
+- hostname starts with `scw-instance-`
+- chezmoi role is `scw-instance`
+- `hasFhhToolkit` is `true`
+- `codex`, `claude`, and `pi` resolve through mise shims when fhh-toolkit is attached
+- `fhh-toolkit` exists and toolkit config has synced
 - hourly `chezmoi-sync` is installed
 
 If regular OpenSSH over MagicDNS fails with `Host key verification failed`
 after a rebuild or retag, clear the stale local key and retry:
 
 ```sh
-ssh-keygen -R scw-agent-02.olm-hops.ts.net
-ssh fhestvang@scw-agent-02.olm-hops.ts.net hostname
+ssh-keygen -R scw-instance-02.olm-hops.ts.net
+ssh fhestvang@scw-instance-02.olm-hops.ts.net hostname
 ```
 
 ## Manual Fallback
 
 Only use this when debugging cloud-init or OpenTofu.
 
-1. Create a one-use preauthorized Tailscale key tagged `tag:scw-agent`.
+1. Create a one-use preauthorized Tailscale key tagged `tag:scw-instance`.
 2. Create fresh `fleet-kv` AppRole material:
 
    ```sh
@@ -126,7 +126,7 @@ Only use this when debugging cloud-init or OpenTofu.
 3. On the VM, join Tailscale:
 
    ```sh
-   sudo tailscale up --reset --auth-key="$TS_AUTHKEY" --ssh --accept-dns=true --hostname=scw-agent-02
+   sudo tailscale up --reset --auth-key="$TS_AUTHKEY" --ssh --accept-dns=true --hostname=scw-instance-02
    ```
 
 4. Put the AppRole material in `~/.config/bao/approle` for `fhestvang`.

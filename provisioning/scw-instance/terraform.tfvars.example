@@ -1,4 +1,4 @@
-hostname = "scw-agent-02"
+hostname = "scw-instance-02"
 
 # Defaults match the current Scaleway project in home/dot_config/scw/config.yaml.
 # Override per plan when needed.
@@ -12,7 +12,7 @@ hostname = "scw-agent-02"
 # root_volume_size_gb = 50
 
 # These are generated into .generated/<hostname>.auto.tfvars.json by:
-#   just scw-instance-prepare scw-agent-02
+#   just scw-instance-prepare scw-instance-02
 # Do not commit them.
 # operator_ssh_public_key = "ssh-ed25519 ..."
 # tailscale_auth_key      = "tskey-auth-..."

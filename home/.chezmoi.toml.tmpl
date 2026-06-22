@@ -7,9 +7,9 @@
 {{- if eq $hostname "pi3" }}{{ $role = "pi" }}{{ end -}}
 {{- if hasPrefix "desktop-" (lower $hostname) }}{{ $role = "laptop" }}{{ end -}}
 {{- if eq $hostname "ingvild" }}{{ $role = "ingvild" }}{{ end -}}
-{{- if hasPrefix "scw-" (lower $hostname) }}{{ $role = "scw-agent" }}{{ end -}}
-{{- $isAgentHost := or (eq $role "spark") (eq $role "laptop") (eq $role "ingvild") (eq $role "scw-agent") -}}
+{{- if hasPrefix "scw-" (lower $hostname) }}{{ $role = "scw-instance" }}{{ end -}}
+{{- $hasFhhToolkit := or (eq $role "spark") (eq $role "laptop") (eq $role "ingvild") (eq $role "scw-instance") -}}
 [data]
     hostname = {{ $hostname | quote }}
     role = {{ $role | quote }}
-    isAgentHost = {{ $isAgentHost }}
+    hasFhhToolkit = {{ $hasFhhToolkit }}

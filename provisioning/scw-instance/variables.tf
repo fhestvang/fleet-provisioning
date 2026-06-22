@@ -1,10 +1,10 @@
 variable "hostname" {
-  description = "Scaleway instance hostname. Must start with scw- so chezmoi renders role=scw-agent."
+  description = "Scaleway instance hostname. Must start with scw-instance-."
   type        = string
 
   validation {
-    condition     = startswith(var.hostname, "scw-")
-    error_message = "hostname must start with scw-."
+    condition     = startswith(var.hostname, "scw-instance-")
+    error_message = "hostname must start with scw-instance-."
   }
 }
 
@@ -56,7 +56,7 @@ variable "operator_ssh_public_key" {
 }
 
 variable "tailscale_auth_key" {
-  description = "One-use, short-lived Tailscale auth key for tag:scw-agent."
+  description = "One-use, short-lived Tailscale auth key for tag:scw-instance."
   type        = string
   sensitive   = true
 }

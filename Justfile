@@ -11,8 +11,8 @@ scw-instance-prepare hostname:
     set -euo pipefail
     hostname='{{hostname}}'
     case "$hostname" in
-      scw-*) ;;
-      *) echo "ERROR: hostname must start with scw-" >&2; exit 1 ;;
+      scw-instance-*) ;;
+      *) echo "ERROR: hostname must start with scw-instance-" >&2; exit 1 ;;
     esac
 
     for cmd in bao curl jq; do
@@ -28,7 +28,7 @@ scw-instance-prepare hostname:
     [ -r "$ssh_pubkey_path" ] || { echo "ERROR: SSH public key not readable: $ssh_pubkey_path" >&2; exit 1; }
 
     tailscale_secret_path="${FLEET_TAILSCALE_BAO_PATH:-kv/projects/fos/shared/tailscale-admin}"
-    tailscale_tag="${FLEET_BOOTSTRAP_TAILSCALE_TAG:-tag:scw-agent}"
+    tailscale_tag="${FLEET_BOOTSTRAP_TAILSCALE_TAG:-tag:scw-instance}"
     tailscale_api_key="$(bao kv get -field=TAILSCALE_API_KEY "$tailscale_secret_path")"
     tailscale_api_base="$(bao kv get -field=TAILSCALE_API_BASE "$tailscale_secret_path" 2>/dev/null || true)"
     tailscale_tailnet="$(bao kv get -field=TAILSCALE_TAILNET "$tailscale_secret_path" 2>/dev/null || true)"
@@ -128,4 +128,4 @@ scw-instance-create hostname:
 # Verify a converged Scaleway instance over the tailnet.
 scw-instance-verify hostname:
     tailscale ping --c 1 {{hostname}}
-    tailscale ssh fhestvang@{{hostname}} 'hostname; whoami; chezmoi data | grep -E "hostname|role|isAgentHost"; for c in mise node nvim lazygit codex claude pi; do printf "%s=" "$c"; command -v "$c"; done; bao kv get -field=GITHUB_TOKEN kv/projects/fos/shared/github-cli >/dev/null; test -d ~/github/fhh-toolkit/.git; crontab -l | grep chezmoi-sync'
+    tailscale ssh fhestvang@{{hostname}} 'hostname; whoami; chezmoi data | grep -E "hostname|role|hasFhhToolkit"; for c in mise node nvim lazygit codex claude pi; do printf "%s=" "$c"; command -v "$c"; done; bao kv get -field=GITHUB_TOKEN kv/projects/fos/shared/github-cli >/dev/null; test -d ~/github/fhh-toolkit/.git; crontab -l | grep chezmoi-sync'
