@@ -70,6 +70,21 @@ There's no push/control-node step: every box self-converges on an hourly
 - `role`: `spark` | `laptop` | `pi` | `ingvild` | `scw-instance` | `tiny`
 - `hasFhhToolkit`: spark/laptop/ingvild/`scw-*` hosts get toolkit sync; tinys do not
 
+## Devcontainer
+
+The repo has a minimal `.devcontainer/` target for DevPod, VS Code Dev
+Containers, and Codespaces-style workflows. It borrows the Rio pattern: install
+only the bootstrap tools in the image (`mise` and `chezmoi`), then let
+chezmoi/mise converge the shell and tool manifest. The post-create command uses
+`--exclude scripts`, so disposable containers do not run fleet cron, Bao, or
+toolkit sync hooks.
+
+The devcontainer passes through local `GITHUB_TOKEN` when it exists. Without a
+token, it applies dotfiles and trusts mise but skips the full `mise install`,
+because several `latest` tools resolve through the GitHub API and unauthenticated
+containers can hit rate limits. A committed mise lockfile is the next step if
+the container should install the full baseline without credentials.
+
 ## Secrets
 
 Secrets live in OpenBao (`kv/projects/*`) and **never touch the repo**. Rather

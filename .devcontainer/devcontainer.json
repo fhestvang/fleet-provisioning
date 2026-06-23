@@ -1,0 +1,14 @@
+{
+  "name": "platform-engineering",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "remoteEnv": {
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+  },
+  "postCreateCommand": "chezmoi init --apply --source ${containerWorkspaceFolder}/home --exclude scripts && mise trust ~/.config/mise && if [ -n \"${GITHUB_TOKEN:-}\" ]; then MISE_YES=1 mise install; else echo 'mise install skipped: set GITHUB_TOKEN locally or add a committed mise.lock for rate-limit-safe installs'; fi"
+}

@@ -37,7 +37,7 @@ small enough to understand.
 | k3d / k3s | `k3s` is the lightweight Kubernetes runtime. `k3d` runs k3s clusters in Docker containers. | The tinys cluster is the real k3s environment; k3d is the disposable rehearsal target before touching it. |
 | Dagger | Portable, containerized workflow steps that can run locally or in automation. Good for build/test/service checks that should not depend on one host. | Installed by mise as a candidate tool. No Dagger workflow is source of truth yet. |
 | Skaffold | Kubernetes dev loop: build, tag, deploy, watch, and tail logs against a selected cluster. | Installed by mise. First useful target should be k3d, not the live tinys cluster. |
-| DevPod / devcontainers | A project can define its runtime while the operator keeps familiar dotfiles and shell behavior. DevPod starts devcontainer environments outside VS Code. | `devpod` is installed by mise. A real repo-owned devcontainer contract still does not exist. |
+| DevPod / devcontainers | A project can define its runtime while the operator keeps familiar dotfiles and shell behavior. DevPod starts devcontainer environments outside VS Code. | `devpod` is installed by mise. The repo now has a minimal devcontainer that bootstraps mise/chezmoi and then converges the home baseline without fleet scripts. |
 | Sesh | Tmux session navigation becomes part of the working interface. | Mise installs `github:joshmedeski/sesh`; tmux binds prefix `S`, `L`, and `9` to picker/last/connect flows. |
 
 ## Audit Coverage
@@ -50,7 +50,7 @@ inside a prose summary.
 | Supercharge workflow | Starship | In mise. Shell prompt config already exists. |
 | Supercharge workflow | Bluefin / immutable OS | Learn the model; do not add to this repo now. It is an operating-system choice, not a VM baseline tool. |
 | Supercharge workflow | Distrobox / Podman GUI containers | Defer. Useful on a Linux desktop for GUI/hardware isolation, but not part of Scaleway VM bootstrap. |
-| Supercharge workflow | DevPod / devcontainers | `devpod` is in mise. The next useful step is a deliberate devcontainer contract, not a generated fallback file. |
+| Supercharge workflow | DevPod / devcontainers | `devpod` is in mise. `.devcontainer/` now defines the deliberate contract: base image, Docker socket feature, mise, chezmoi, script-free home convergence, and optional `GITHUB_TOKEN` pass-through for full installs. |
 | Supercharge workflow | Chezmoi | Already the convergence engine. |
 | Supercharge workflow | Mise | Already the tool contract; now widened to include terminal/workstation tools too. |
 | Supercharge workflow | Bat / Eza / FZF / Zoxide / Ripgrep / fd | In mise because shell config and aliases use them. |
@@ -116,8 +116,8 @@ How each audit tool fits this story:
 - k3s: real lightweight Kubernetes runtime on the tinys.
 - Dagger: candidate for portable platform checks.
 - Skaffold: candidate for Kubernetes app loops against k3d.
-- DevPod/devcontainers: future disposable project workspaces that consume the
-  same baseline rather than forking it.
+- DevPod/devcontainers: disposable project workspaces that consume the same
+  baseline rather than forking it.
 - Sesh: fast return to the right tmux context while operating the platform.
 
 Verification already exists:
@@ -148,8 +148,10 @@ hourly convergence cron.
 
 ## Decisions to Revisit
 
-- What should the first repo-owned devcontainer contract include beyond the
-  fallback image DevPod generated during the smoke test?
+- Should the repo commit a mise lockfile so DevPod/devcontainers can install
+  the full baseline without relying on a passed `GITHUB_TOKEN`?
+- Should the devcontainer eventually run a smaller host-specific mise profile,
+  or is the full baseline acceptable for disposable workspaces?
 - What is the first workload that deserves a k3d rehearsal path?
 - Should Dagger wait for Semaphore/drift workflows, or own a small local check
   sooner?

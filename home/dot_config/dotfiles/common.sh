@@ -25,6 +25,7 @@ export DOTFILES_MACHINE
 # invocation (CLI, `headroom wrap`, the MCP server spawned by an agent launched
 # from this shell). The systemd proxy sets this in its own env file as well.
 export HEADROOM_TELEMETRY=off
+export DAGGER_NO_NAG=1
 
 # OpenBao endpoint — the host-independent Tailscale Service name (reachable from
 # every box once the tailnet ACL grants it). Lets bao/vkv and the scw/linear
@@ -525,7 +526,7 @@ bd() {
   fi
 }
 
-if dotfiles_have_linux starship; then
+if dotfiles_have_linux starship && [ "${TERM:-dumb}" != "dumb" ]; then
   if [ -n "${ZSH_VERSION:-}" ]; then
     zmodload zsh/parameter 2>/dev/null || true
 
