@@ -6,6 +6,7 @@ package_update: true
 packages:
   - ca-certificates
   - curl
+  - docker.io
   - git
   - openssh-server
   - sudo
@@ -63,6 +64,8 @@ runcmd:
   - [bash, -lc, "install -d -m 700 -o ${operator_user} -g ${operator_user} /home/${operator_user}/.config"]
   - [bash, -lc, "install -d -m 700 -o ${operator_user} -g ${operator_user} /home/${operator_user}/.config/bao"]
   - [bash, -lc, "install -m 600 -o ${operator_user} -g ${operator_user} /run/fleet-bootstrap/approle /home/${operator_user}/.config/bao/approle"]
+  - [bash, -lc, "usermod -aG docker ${operator_user}"]
+  - [systemctl, enable, --now, docker]
   - [bash, -lc, "if ! command -v tailscale >/dev/null 2>&1; then curl -fsSL https://tailscale.com/install.sh | sh; fi"]
   - [systemctl, enable, --now, tailscaled]
   - [bash, -lc, "tailscale logout >/dev/null 2>&1 || true"]

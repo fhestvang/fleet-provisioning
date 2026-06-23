@@ -8,8 +8,8 @@ platform baseline.
 - OpenTofu owns cloud resources: Instance, public IP, security group, and the
   first-boot user-data payload.
 - Cloud-init runs inside the VM on first boot. It creates `fhestvang`, installs
-  Tailscale, joins the tailnet as `tag:scw-instance`, writes Bao AppRole
-  material, and starts chezmoi convergence.
+  Docker and Tailscale, joins the tailnet as `tag:scw-instance`, writes Bao
+  AppRole material, and starts chezmoi convergence.
 - Chezmoi owns the user environment after first boot: dotfiles, mise tools,
   Bao wrappers, `fhh-toolkit`, and hourly convergence.
 - `just` is only the command runner. It gives this module stable commands and

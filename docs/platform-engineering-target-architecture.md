@@ -89,10 +89,11 @@ state boundaries.
     environments, remote state, drift checks, and explicit ownership.
 25. **Disposable development environments**: Devcontainers and DevPod are
     execution adapters for the same baseline, not a second dotfiles system.
-    `k3d` is the local rehearsal target for k3s/Kubernetes changes before they
-    touch the tinys cluster. `Skaffold` is the first dev-loop candidate for
-    Kubernetes workloads; `Dagger` is the first candidate for portable
-    workflow/service orchestration.
+    Docker is the host runtime; mise provides the operator CLIs. `k3d` is the
+    local rehearsal target for k3s/Kubernetes changes before they touch the
+    tinys cluster. `Skaffold` is the first dev-loop candidate for Kubernetes
+    workloads; `Dagger` is the first candidate for portable workflow/service
+    orchestration.
 
 ## Target Repo Shape
 

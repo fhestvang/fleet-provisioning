@@ -39,8 +39,8 @@ This repo converges them onto established tools.
    group, and cloud-init user-data.
 2. The operator path creates a one-use Tailscale key tagged `tag:scw-instance`,
    provisions fleet Bao AppRole material, and passes both into cloud-init.
-   Cloud-init joins the tailnet with Tailscale SSH enabled, then runs
-   `chezmoi init --apply --force`.
+   Cloud-init installs host-level prerequisites such as Docker, joins the
+   tailnet with Tailscale SSH enabled, then runs `chezmoi init --apply --force`.
    Current implementation: `just scw-instance-*`.
 3. `run_after_10` installs base tools including `bao`; `run_after_11` refreshes
    `~/.vault-token`; `run_onchange_after_12` runs `mise install` when the

@@ -33,11 +33,11 @@ small enough to understand.
 | Topic | What to Learn | Current Repo Relevance |
 |---|---|---|
 | Chezmoi `run_onchange` + mise hash | `run_onchange` reruns when the rendered script changes. The repo embeds `{{ includeTemplate "dot_config/mise/config.toml.tmpl" . \| sha256sum }}` in `home/run_onchange_after_12-mise-install.sh.tmpl`, so editing the rendered mise manifest triggers `mise install`. | Prevents stale tools after a manifest change, including host-specific changes from `hasFhhToolkit`. |
-| Mise as tool manifest | Mise is the fleet tool contract, not just a version manager. Foundation tools are pinned; utility and fast-moving CLIs float. | `home/dot_config/mise/config.toml.tmpl` declares foundation runtimes, terminal/workstation CLIs such as `starship`, `fzf`, `zoxide`, `ripgrep`, `bat`, `eza`, `atuin`, `tmux`, `sesh`, `btop`, `gh`, and `gh-dash`, platform tools such as `kubectl`, `k9s`, `k3d`, `dagger`, `skaffold`, and toolkit-gated coding CLIs. |
+| Mise as tool manifest | Mise is the fleet tool contract, not just a version manager. Foundation tools are pinned; utility and fast-moving CLIs float. | `home/dot_config/mise/config.toml.tmpl` declares foundation runtimes, terminal/workstation CLIs such as `starship`, `fzf`, `zoxide`, `ripgrep`, `bat`, `eza`, `atuin`, `tmux`, `sesh`, `btop`, `gh`, and `gh-dash`, platform tools such as `kubectl`, `k9s`, `k3d`, `dagger`, `skaffold`, `devpod`, and toolkit-gated coding CLIs. |
 | k3d / k3s | `k3s` is the lightweight Kubernetes runtime. `k3d` runs k3s clusters in Docker containers. | The tinys cluster is the real k3s environment; k3d is the disposable rehearsal target before touching it. |
 | Dagger | Portable, containerized workflow steps that can run locally or in automation. Good for build/test/service checks that should not depend on one host. | Installed by mise as a candidate tool. No Dagger workflow is source of truth yet. |
 | Skaffold | Kubernetes dev loop: build, tag, deploy, watch, and tail logs against a selected cluster. | Installed by mise. First useful target should be k3d, not the live tinys cluster. |
-| DevPod / devcontainers | A project can define its runtime while the operator keeps familiar dotfiles and shell behavior. DevPod starts devcontainer environments outside VS Code. | Target architecture names `environments/devcontainer/`, but no implementation exists yet. `devpod` is not currently in the mise manifest. |
+| DevPod / devcontainers | A project can define its runtime while the operator keeps familiar dotfiles and shell behavior. DevPod starts devcontainer environments outside VS Code. | `devpod` is installed by mise. A real repo-owned devcontainer contract still does not exist. |
 | Sesh | Tmux session navigation becomes part of the working interface. | Mise installs `github:joshmedeski/sesh`; tmux binds prefix `S`, `L`, and `9` to picker/last/connect flows. |
 
 ## Audit Coverage
@@ -50,13 +50,13 @@ inside a prose summary.
 | Supercharge workflow | Starship | In mise. Shell prompt config already exists. |
 | Supercharge workflow | Bluefin / immutable OS | Learn the model; do not add to this repo now. It is an operating-system choice, not a VM baseline tool. |
 | Supercharge workflow | Distrobox / Podman GUI containers | Defer. Useful on a Linux desktop for GUI/hardware isolation, but not part of Scaleway VM bootstrap. |
-| Supercharge workflow | DevPod / devcontainers | Architecture target, not implemented yet. Add `devpod` only when `environments/devcontainer/` exists. |
+| Supercharge workflow | DevPod / devcontainers | `devpod` is in mise. The next useful step is a deliberate devcontainer contract, not a generated fallback file. |
 | Supercharge workflow | Chezmoi | Already the convergence engine. |
 | Supercharge workflow | Mise | Already the tool contract; now widened to include terminal/workstation tools too. |
 | Supercharge workflow | Bat / Eza / FZF / Zoxide / Ripgrep / fd | In mise because shell config and aliases use them. |
 | Supercharge workflow | k3d / k9s / kubectl | In mise. k3d is the disposable k3s rehearsal target. |
 | Supercharge workflow | Dagger | In mise as the first portable workflow/service orchestration spike. |
-| Supercharge workflow | Docker Compose | Keep as project-local service composition; do not put Docker itself in mise. |
+| Supercharge workflow | Docker Compose | Keep as project-local service composition. Docker itself is a host runtime installed by cloud-init on Scaleway instances, not a mise tool. |
 | Supercharge workflow | `fd` + `entr` live-reload loop | Represented by `fd` and `watchexec` in mise. Do not add a second watcher until a real loop needs it. |
 | Supercharge workflow | Skaffold | In mise as the first Kubernetes dev-loop candidate. |
 | Supercharge workflow | Tilt | Defer. More UI and config; evaluate only after a Skaffold/k3d slice. |
@@ -100,8 +100,10 @@ What happens:
 - `run_after_10` installs base tools; `run_after_11` refreshes the Bao token.
 - `run_onchange_after_12` runs `mise install` because the mise manifest hash is
   embedded in the rendered script.
+- Cloud-init installs Docker as the host container runtime on Scaleway
+  instances.
 - Mise installs the declared tools, including terminal/workstation CLIs, k3d,
-  Dagger, Skaffold, and `sesh`.
+  Dagger, Skaffold, DevPod, and `sesh`.
 - Toolkit-capable hosts sync `fhh-toolkit`.
 - The hourly `chezmoi-sync` cron keeps the host converged.
 
@@ -146,7 +148,8 @@ hourly convergence cron.
 
 ## Decisions to Revisit
 
-- Should `devpod` join the mise manifest before a real devcontainer exists?
+- What should the first repo-owned devcontainer contract include beyond the
+  fallback image DevPod generated during the smoke test?
 - What is the first workload that deserves a k3d rehearsal path?
 - Should Dagger wait for Semaphore/drift workflows, or own a small local check
   sooner?
