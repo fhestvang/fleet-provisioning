@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # fnm and nvm are retired from the fleet (2026-06-22); node now comes from the
-# mise manifest. Keep this cleanup idempotent so every hourly chezmoi update
-# removes leftover installs regardless of how they got there. Mirrors
+# mise manifest. Keep this cleanup idempotent so each chezmoi apply removes
+# leftover installs regardless of how they got there. Mirrors
 # run_after_15-remove-opencode.sh.
 set -euo pipefail
 

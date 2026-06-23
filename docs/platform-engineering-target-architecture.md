@@ -57,8 +57,10 @@ state boundaries.
    platform resources, not side notes in an app repo.
 10. **Host convergence**: Chezmoi owns user config; mise owns tools; root is
     bootstrap and repair only.
-11. **Ongoing convergence**: Hourly `chezmoi-sync` is the fleet reconciliation
-    loop. It needs logging, failure visibility, and a manual repair path.
+11. **Ongoing apply**: `chezmoi-sync` is the fleet pull/apply entrypoint. It
+    needs logging, failure visibility, and a manual repair path. Expensive tool
+    work should stay change-triggered through hooks such as the mise manifest
+    hash, not timer-driven.
 12. **Verification**: Every stack needs acceptance checks that prove the real
     outcome, not only a successful apply.
 13. **Drift detection**: Scheduled plan-only runs should report drift without

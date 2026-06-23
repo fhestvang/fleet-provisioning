@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Ensure the hourly convergence cron calls chezmoi-sync (non-interactive,
+# Ensure the scheduled pull/apply cron calls chezmoi-sync (non-interactive,
 # self-healing config, failure-notifying) instead of a bare `chezmoi update`.
-# Idempotent: rewrites only our convergence line, preserving every other job.
+# Idempotent: rewrites only our managed line, preserving every other job.
 #   {{ .hostname }}
 set -euo pipefail
 
@@ -11,7 +11,7 @@ line="@hourly $bin"
 
 current="$(crontab -l 2>/dev/null || true)"
 
-# Strip any prior convergence entries: our marker, our bin path, and the legacy
+# Strip any prior managed entries: our marker, our bin path, and the legacy
 # `chezmoi update` form this replaces. Everything else is kept verbatim.
 cleaned="$(printf '%s\n' "$current" \
   | grep -vF "$marker" \

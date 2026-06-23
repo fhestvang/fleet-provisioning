@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hourly fleet convergence tick (invoked by cron; see run_after_02).
+# Scheduled fleet pull/apply entrypoint (invoked by cron; see run_after_02).
 #
 # Why --init --force: cron has no controlling TTY. Plain `chezmoi update` (a) can
 # only prompt-then-skip when a target was edited outside chezmoi ("could not open

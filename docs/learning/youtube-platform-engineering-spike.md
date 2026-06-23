@@ -105,7 +105,8 @@ What happens:
 - Mise installs the declared tools, including terminal/workstation CLIs, k3d,
   Dagger, Skaffold, DevPod, and `sesh`.
 - Toolkit-capable hosts sync `fhh-toolkit`.
-- The hourly `chezmoi-sync` cron keeps the host converged.
+- Future repo changes are picked up through the `chezmoi-sync` pull/apply
+  entrypoint; expensive work such as `mise install` is hook-gated.
 
 How each audit tool fits this story:
 
@@ -128,7 +129,7 @@ just scw-instance-verify scw-instance-02
 
 It checks tailnet reachability, SSH as `fhestvang`, chezmoi role data, the
 important mise shims, Bao access to the GitHub token, `fhh-toolkit`, and the
-hourly convergence cron.
+scheduled chezmoi pull/apply entrypoint.
 
 ## Hands-On Spike
 

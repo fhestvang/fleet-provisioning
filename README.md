@@ -48,8 +48,11 @@ stable per-machine facts (`role`, `hasFhhToolkit`), runs the dotfiles installer
 for tools, and syncs fhh-toolkit when that capability is attached. Secrets aren't rendered — the
 per-tool wrappers read Bao at call time (see below).
 
-There's no push/control-node step: every box self-converges on an hourly
-`chezmoi update` cron (`run_after_02-install-sync-cron`).
+There's no push/control-node step. Machines notice Git changes through the
+installed `chezmoi-sync` pull/apply entrypoint, and expensive work is
+change-triggered by chezmoi hooks. In particular, `mise install` is gated by
+`run_onchange_after_12-mise-install.sh.tmpl`, which hashes the rendered mise
+manifest.
 
 ## Rolling out a fleet change
 
@@ -59,14 +62,19 @@ The smooth path is:
 # edit this repo, then validate from the repo checkout
 chezmoi -S home apply --exclude scripts
 
-# commit + push, then test the real fleet convergence path locally
+# commit + push, then test the same pull/apply entrypoint a host runs
 ~/.local/bin/chezmoi-sync
 ```
 
 Use `~/.local/bin/chezmoi-sync` for on-demand convergence on a host, not plain
-`chezmoi update`. It is the same entrypoint cron runs, and it uses
-`chezmoi update --init --force` so generated config changes and locally-drifted
-managed files are reconciled without an interactive prompt.
+`chezmoi update`. It uses `chezmoi update --init --force` so generated config
+changes and locally-drifted managed files are reconciled without an interactive
+prompt.
+
+The Rio-inspired part is the mise hook: `run_onchange_after_12-mise-install.sh.tmpl`
+embeds a hash of the rendered mise manifest, so `mise install` reruns when
+`~/.config/mise/config.toml` would change. It is not a timer-based tool install
+loop.
 
 Two source paths matter:
 
@@ -76,8 +84,8 @@ Two source paths matter:
 
 Testing with `chezmoi -S home apply` proves the checkout renders, but it does
 not update the host's live chezmoi source clone. After pushing, run
-`chezmoi-sync` on one or two representative hosts to prove the actual hourly
-path works.
+`chezmoi-sync` on one representative host to prove the pull/apply entrypoint sees
+the commit and that `run_onchange` gates expensive work correctly.
 
 ## Host resource model
 
@@ -127,6 +135,7 @@ was retired. See `docs/architecture.md` for the full account.
 ## Status
 
 chezmoi is the **live** manager across the fleet (spark + eigil + ingvild +
-dicte + pi3 + laptop), converging via the hourly `chezmoi-sync` cron. The old
-`dotfiles` commit-hook fan-out is **retired** (hook + `dotfiles-fleet-sync`
-deleted). See `docs/architecture.md` for the full migration log.
+dicte + pi3 + laptop). The old `dotfiles` commit-hook fan-out is **retired**
+(hook + `dotfiles-fleet-sync` deleted). Tool installs are driven by the mise
+manifest and the `run_onchange` hash hook, not by a timer loop. See
+`docs/architecture.md` for the full migration log.

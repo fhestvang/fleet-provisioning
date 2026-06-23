@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# OpenCode is retired from the fleet. Keep this cleanup idempotent so every
-# hourly chezmoi update removes old installs regardless of how they got there.
+# OpenCode is retired from the fleet. Keep this cleanup idempotent so each
+# chezmoi apply removes old installs regardless of how they got there.
 set -euo pipefail
 
 remove_path() {

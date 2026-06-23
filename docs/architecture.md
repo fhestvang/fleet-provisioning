@@ -22,13 +22,16 @@ This repo converges them onto established tools.
             └─────────────────────────────────────────────────────────────────┘
 ```
 
-- **Pull only.** Each box self-converges on an hourly `chezmoi update` cron — no
-  control-node push. This scales to VPCs that boot and provision themselves
-  (cloud-init runs `chezmoi init --apply`).
-- **One convergence entrypoint.** Cron and manual fleet tests should both use
-  `~/.local/bin/chezmoi-sync`, which wraps `chezmoi update --init --force`.
-  That keeps generated config and locally-drifted managed files self-healing in
-  non-interactive sessions.
+- **Pull/apply, then hook-gated work.** Each box pulls and applies the repo via
+  `chezmoi-sync` (`chezmoi update --init --force`), but expensive tool work is
+  not timer-based. `run_onchange_after_12-mise-install.sh.tmpl` embeds a hash of
+  the rendered mise manifest, so `mise install` runs when the manifest changes.
+  This scales to VPCs that boot and provision themselves (cloud-init runs
+  `chezmoi init --apply`).
+- **One manual entrypoint.** Manual fleet tests should use
+  `~/.local/bin/chezmoi-sync` rather than bare `chezmoi update`, so generated
+  config and locally-drifted managed files self-heal in non-interactive
+  sessions.
 - **Config and cleanup are separate concerns.** Removing a tool from a config
   file prevents future use, but existing plugin directories, caches, generated
   parser state, and manager-installed binaries may remain on hosts. Retire that
@@ -56,8 +59,9 @@ This repo converges them onto established tools.
    rendered mise manifest changes; and `run_after_20` clones/syncs private
    `fhh-toolkit` using a temporary
    Bao-backed GitHub credential.
-4. They self-converge on the hourly `chezmoi update` cron — no control-node or
-   Ansible step; discovery is Tailscale + tags.
+4. Future repo changes arrive through the installed `chezmoi-sync` pull/apply
+   entrypoint, while `run_onchange` gates expensive work such as `mise install`;
+   no control-node or Ansible step is involved. Discovery is Tailscale + tags.
 5. Access via Tailscale SSH + ACLs (`tag:scw-instance`) plus public SSH as the
    break-glass path during initial bootstrap.
 
@@ -69,7 +73,7 @@ This repo converges them onto established tools.
 | chezmoi source: per-machine data, install.sh driver, toolkit sync, Linear secret | ✅ done |
 | Validated rendering on Spark (data + secret) without mutating any home | ✅ done |
 | Ansible removed; Spark serving units migrated into chezmoi (`dot_config/systemd/user`) | ✅ done (2026-06-19) |
-| **Cutover: chezmoi the live manager on spark + eigil + dicte + pi3** | ✅ done (2026-06-17), pull via @hourly cron; repo made public |
+| **Cutover: chezmoi the live manager on spark + eigil + dicte + pi3** | ✅ done (2026-06-17), pull/apply via `chezmoi-sync`; repo made public |
 | Retire the dotfiles commit-hook fan-out | ✅ done — hook + dotfiles-fleet-sync deleted |
 | **Bao reachable from the fleet** | ✅ done — ACL grant + read-only AppRole token |
 | Ingvild cutover | ✅ done (2026-06-22) — `chezmoi`, Bao, mise, `fhh-toolkit`, runtime config |
