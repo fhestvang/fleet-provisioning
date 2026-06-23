@@ -90,7 +90,9 @@ state boundaries.
 25. **Disposable development environments**: Devcontainers and DevPod are
     execution adapters for the same baseline, not a second dotfiles system.
     `k3d` is the local rehearsal target for k3s/Kubernetes changes before they
-    touch the tinys cluster.
+    touch the tinys cluster. `Skaffold` is the first dev-loop candidate for
+    Kubernetes workloads; `Dagger` is the first candidate for portable
+    workflow/service orchestration.
 
 ## Target Repo Shape
 
@@ -146,7 +148,8 @@ platform-engineering/
 - `environments/` holds disposable development targets that consume the same
   baseline as real hosts. Devcontainers/DevPod give people and agents a
   repeatable workstation; `k3d` gives k3s/Kubernetes changes a safe rehearsal
-  cluster before the tinys.
+  cluster before the tinys; `Skaffold` and `Dagger` are the first workflow tools
+  to evaluate there.
 - `docs/adr/` records decisions so future agents do not rediscover and reargue
   the same tradeoffs.
 
