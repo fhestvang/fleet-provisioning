@@ -3,11 +3,13 @@
 	email = frederikhestvang@gmail.com
 [credential "https://gist.github.com"]
 	helper =
+	helper = bao
 	helper = !gh auth git-credential
 [beads]
 	role = maintainer
 [credential "https://github.com"]
 	helper =
+	helper = bao
 	helper = !gh auth git-credential
 [safe]
 	directory = /home/fhestvang/actions-runner/fos/_work/fos/fos
